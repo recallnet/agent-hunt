@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react";
 import { RainbowKitProvider, getDefaultWallets } from "@rainbow-me/rainbowkit";
 import { WagmiProvider, createConfig, http } from "wagmi";
@@ -7,16 +8,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@rainbow-me/rainbowkit/styles.css";
 
 const queryClient = new QueryClient();
-
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "";
 if (!projectId) {
   throw new Error("You need to provide a NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID env variable");
 }
 
-const { connectors } = getDefaultWallets({
-  appName: "Agent Hunt",
-  projectId,
-});
+const { connectors } = getDefaultWallets({ appName: "Agent Hunt", projectId });
 
 const config = createConfig({
   chains: [mainnet, polygon, optimism, arbitrum, base, zora, sepolia],
@@ -36,9 +33,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider modalSize="compact" initialChain={mainnet}>
-          {children}
-        </RainbowKitProvider>
+        <RainbowKitProvider>{children}</RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

@@ -1,47 +1,149 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import Image from "next/image";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "@/components/ui/button";
+import { NewAgentModal } from "./NewAgentModal";
+import { Menu } from "lucide-react";
 
 export const AppBar: React.FC = () => {
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleHuntClick = () => {
+    setModalOpen(true);
+    setMobileMenuOpen(false);
+  };
+  const handleCloseModal = () => setModalOpen(false);
+
+  const navTextStyle = "font-bold text-xl tracking-tighter";
+  const centerNavStyle = `text-2xl ${navTextStyle} hover:bg-transparent hover:cursor-pointer`;
+
+  const huntButtonClass = isModalOpen
+    ? "h-[42px] w-[135px] rounded-[5px] bg-[#2934FF] text-white border-2 border-[#2934FF] hover:bg-[#2934FF] hover:cursor-pointer"
+    : "h-[42px] w-[135px] text-brand-blue hover:cursor-pointer";
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <nav className="container mx-auto flex h-14 items-center justify-between px-4">
-        {/* Left Column: Icon and Text */}
-        <div className="flex items-center space-x-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 text-primary"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01"
-            />
-          </svg>
-          <span className="font-bold text-lg">Agent Hunt</span>
-        </div>
+    <>
+      <header className="sticky top-0 z-40 w-full bg-white shadow-sm">
+        <nav className="container mx-auto flex h-[84px] items-center justify-between px-6">
+          {/* Left: Logo */}
+          <div className="flex items-center space-x-3">
+            <Image src="/agent-icon.svg" alt="Agent Hunt Logo" width={31} height={35} />
+            <span className="text-3xl font-normal tracking-tighter hidden md:inline">AgentHunt</span>
+          </div>
 
-        {/* Center Column: Navigation Buttons */}
-        <div className="hidden md:flex items-center space-x-2">
-          <Button variant="ghost">Home</Button>
-          <Button variant="ghost">Features</Button>
-          <Button variant="ghost">Dashboard</Button>
-        </div>
+          {/* Center: Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            <Button variant="ghost" className={`${centerNavStyle} p-0 text-[#2934FF]`}>
+              TOP
+            </Button>
+            <Button variant="ghost" className={`${centerNavStyle} ${huntButtonClass} p-0`} onClick={handleHuntClick}>
+              + HUNT
+            </Button>
+            <Button variant="ghost" className={`${centerNavStyle} p-0`}>
+              NEW
+            </Button>
+          </div>
 
-        {/* Right Column: Action Buttons */}
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" className="hidden sm:block">
-            Get Started
-          </Button>
-          <ConnectButton />
-        </div>
-      </nav>
-    </header>
+          {/* Right: Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-10">
+            <Button
+              variant="link"
+              className={`${navTextStyle} p-0 h-auto hover:bg-transparent hover:no-underline hover:cursor-pointer`}
+            >
+              RULES
+            </Button>
+            <div className={navTextStyle}>
+              <ConnectButton.Custom>
+                {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted }) => {
+                  const ready = mounted;
+                  const connected = ready && account && chain;
+                  return (
+                    <div
+                      {...(!ready && {
+                        "aria-hidden": true,
+                        style: { opacity: 0, pointerEvents: "none", userSelect: "none" },
+                      })}
+                    >
+                      {(() => {
+                        if (!connected) {
+                          return (
+                            <button
+                              onClick={openConnectModal}
+                              type="button"
+                              className={`${navTextStyle} hover:cursor-pointer hover:bg-transparent`}
+                            >
+                              CONNECT WALLET
+                            </button>
+                          );
+                        }
+                        if (chain.unsupported) {
+                          return (
+                            <button
+                              onClick={openChainModal}
+                              type="button"
+                              className={`${navTextStyle} text-red-500 hover:cursor-pointer hover:bg-transparent`}
+                            >
+                              WRONG NETWORK
+                            </button>
+                          );
+                        }
+                        return (
+                          <button
+                            onClick={openAccountModal}
+                            type="button"
+                            className={`${navTextStyle} hover:cursor-pointer hover:bg-transparent`}
+                          >
+                            {account.displayName}
+                          </button>
+                        );
+                      })()}
+                    </div>
+                  );
+                }}
+              </ConnectButton.Custom>
+            </div>
+          </div>
+
+          {/* Mobile Menu Button & Connect Wallet */}
+          <div className="md:hidden flex items-center space-x-4">
+            <div className={navTextStyle}>
+              <ConnectButton showBalance={false} chainStatus="none" label="CONNECT" accountStatus="avatar" />
+            </div>
+            <button onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}>
+              <Menu className="w-8 h-8" />
+            </button>
+          </div>
+        </nav>
+
+        {/* Mobile Menu Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-white shadow-md absolute w-full">
+            <div className="flex flex-col items-center space-y-4 p-4">
+              <Button variant="ghost" className={centerNavStyle} onClick={() => setMobileMenuOpen(false)}>
+                TOP
+              </Button>
+              <Button variant="ghost" className={`${centerNavStyle} ${huntButtonClass}`} onClick={handleHuntClick}>
+                + HUNT
+              </Button>
+              <Button variant="ghost" className={centerNavStyle} onClick={() => setMobileMenuOpen(false)}>
+                NEW
+              </Button>
+              <Button
+                variant="link"
+                className={`${navTextStyle} hover:bg-transparent hover:cursor-pointer`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                RULES
+              </Button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      <NewAgentModal isOpen={isModalOpen} onClose={handleCloseModal} />
+    </>
   );
 };
