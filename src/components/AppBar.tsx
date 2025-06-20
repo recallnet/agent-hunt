@@ -21,7 +21,7 @@ export const AppBar: React.FC = () => {
   const centerNavStyle = `text-2xl ${navTextStyle} hover:bg-transparent hover:cursor-pointer`;
 
   const huntButtonClass = isModalOpen
-    ? "h-[42px] w-[135px] rounded-[5px] bg-[#2934FF] text-white border-2 border-[#2934FF] hover:bg-[#2934FF] hover:cursor-pointer"
+    ? "h-[42px] w-[135px] rounded-[5px] bg-[var(--brand-blue)] text-white border-2 border-[var(--brand-blue)] hover:bg-[var(--brand-blue)] hover:cursor-pointer"
     : "h-[42px] w-[135px] text-brand-blue hover:cursor-pointer";
 
   return (
@@ -36,7 +36,7 @@ export const AppBar: React.FC = () => {
 
           {/* Center: Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Button variant="ghost" className={`${centerNavStyle} p-0 text-[#2934FF]`}>
+            <Button variant="ghost" className={`${centerNavStyle} p-0 text-[var(--brand-blue)]`}>
               TOP
             </Button>
             <Button variant="ghost" className={`${centerNavStyle} ${huntButtonClass} p-0`} onClick={handleHuntClick}>
