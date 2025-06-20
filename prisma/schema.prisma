@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -14,8 +7,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Defines the possible skills for an agent
+enum Skill {
+  TRADING
+  RESEARCH
+  AUTOMATION
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   address   String   @unique
+  agents    Agent[] // A user can have many agents
+}
+
+model Agent {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  name        String
+  avatarUrl   String
+  xAccount    String
+  description String
+  whyHunt     String
+  skill       Skill
+
+  // Relation to User
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
 }

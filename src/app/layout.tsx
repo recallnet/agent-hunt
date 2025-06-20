@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AppBar } from "@/components/AppBar";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "Agent Hunt",
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <footer className="w-full text-center p-4 text-muted-foreground">
               <p>© {new Date().getFullYear()} Recall. All Rights Reserved.</p>
             </footer>
+            <Toaster position="bottom-center" />
           </div>
         </Providers>
       </body>
