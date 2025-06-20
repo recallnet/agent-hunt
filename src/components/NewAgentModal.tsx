@@ -144,10 +144,14 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose })
 
       // Refetch the data after the agent that's just been created
       mutate("/api/agents");
-
       onClose();
-    } catch (error: any) {
-      toast.error(error.message || "An unexpected error occurred.", { id: loadingToast });
+    } catch (error: unknown) {
+      // MODIFIED: Changed `any` to `unknown` for type safety
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage, { id: loadingToast });
     } finally {
       setIsSubmitting(false);
     }

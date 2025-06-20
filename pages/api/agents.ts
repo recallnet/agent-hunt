@@ -60,12 +60,12 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse<Agent | Erro
     const [fields, files] = await form.parse(req);
 
     const agentData: AgentFields = {
-      name: fields.name?.[0]!,
-      xAccount: fields.xAccount?.[0]!,
-      description: fields.description?.[0]!,
-      whyHunt: fields.whyHunt?.[0]!,
-      skill: fields.skill?.[0] as AgentFields["skill"],
-      authorAddress: fields.authorAddress?.[0]!,
+      name: fields.name?.[0] || "",
+      xAccount: fields.xAccount?.[0] || "",
+      description: fields.description?.[0] || "",
+      whyHunt: fields.whyHunt?.[0] || "",
+      skill: (fields.skill?.[0] || "") as AgentFields["skill"],
+      authorAddress: fields.authorAddress?.[0] || "",
     };
 
     const avatarFile = files.avatar?.[0];
