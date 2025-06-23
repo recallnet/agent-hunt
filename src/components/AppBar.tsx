@@ -181,6 +181,7 @@ export const AppBar: React.FC = () => {
           </div>
         )}
       </header>
+      {/* Dummy comment */}
 
       <NewAgentModal isOpen={isModalOpen} onClose={handleCloseModal} onSuccess={handleNewAgentSuccess} />
       {shareXAgentData && (
