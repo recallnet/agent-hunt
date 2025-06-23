@@ -5,17 +5,43 @@ import Image from "next/image";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "@/components/ui/button";
 import { NewAgentModal } from "./NewAgentModal";
+import { ShareXModal } from "./ShareXModal";
 import { Menu } from "lucide-react";
+import type { Agent } from "@prisma/client";
 
 export const AppBar: React.FC = () => {
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isShareXModalOpen, setShareXModalOpen] = useState(false);
+  const [shareXAgentData, setShareXAgentData] = useState<
+    | (Pick<Agent, "id" | "name" | "xAccount" | "description" | "whyHunt" | "skill"> & {
+        agentHandle?: string;
+      })
+    | null
+  >(null);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleHuntClick = () => {
     setModalOpen(true);
     setMobileMenuOpen(false);
   };
-  const handleCloseModal = () => setModalOpen(false);
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleNewAgentSuccess = (
+    agentData: Pick<Agent, "id" | "name" | "xAccount" | "description" | "whyHunt" | "skill"> & {
+      agentHandle?: string;
+    }
+  ) => {
+    setShareXAgentData(agentData);
+    setShareXModalOpen(true);
+  };
+
+  const handleCloseShareXModal = () => {
+    setShareXModalOpen(false);
+    setShareXAgentData(null);
+  };
 
   const navTextStyle = "font-bold text-xl tracking-tighter";
   const centerNavStyle = `text-2xl ${navTextStyle} hover:bg-transparent hover:cursor-pointer`;
@@ -39,7 +65,7 @@ export const AppBar: React.FC = () => {
             <Button variant="ghost" className={`${centerNavStyle} p-0 text-[var(--brand-blue)]`}>
               TOP
             </Button>
-            <Button variant="ghost" className={`${centerNavStyle} ${huntButtonClass} p-0`} onClick={handleHuntClick}>
+            <Button variant="ghost" className={`${centerNavStyle} ${huntButtonClass}`} onClick={handleHuntClick}>
               + HUNT
             </Button>
             <Button variant="ghost" className={`${centerNavStyle} p-0`}>
@@ -143,7 +169,10 @@ export const AppBar: React.FC = () => {
         )}
       </header>
 
-      <NewAgentModal isOpen={isModalOpen} onClose={handleCloseModal} />
+      <NewAgentModal isOpen={isModalOpen} onClose={handleCloseModal} onSuccess={handleNewAgentSuccess} />
+      {shareXAgentData && (
+        <ShareXModal isOpen={isShareXModalOpen} onClose={handleCloseShareXModal} agentData={shareXAgentData} />
+      )}
     </>
   );
 };

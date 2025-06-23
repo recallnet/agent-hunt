@@ -9,14 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useAccount } from "wagmi";
 import toast from "react-hot-toast";
-import { AgentFields, NewAgentModalProps } from "../../utils/types";
 import { useSWRConfig } from "swr";
+import type { Agent } from "@prisma/client";
+import { FormErrors, FormState, NewAgentModalProps } from "../../utils/types";
 
 // Define types for local form state and errors
-type FormState = Omit<AgentFields, "authorAddress" | "skill"> & { skill: string };
-type FormErrors = Partial<Record<keyof FormState | "avatar", string>>;
 
-export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose }) => {
+export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const { address, isConnected } = useAccount();
   const { mutate } = useSWRConfig();
 
@@ -32,6 +31,9 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose })
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Constant for max file size (1 MB in bytes)
+  const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
 
   // Effect to reset the form state when the modal is closed
   useEffect(() => {
@@ -61,47 +63,73 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose })
 
   if (!isOpen) return null;
 
+  // --- Validation Functions ---
+
+  const validateField = (field: keyof FormState, value: string): string | undefined => {
+    switch (field) {
+      case "name":
+        return value.trim() ? undefined : "Agent name is required.";
+      case "xAccount":
+        if (!value.trim()) return "X Account is required.";
+        const xAccountPattern = /^(https?:\/\/)?x\.com\/.+$/;
+        return xAccountPattern.test(value)
+          ? undefined
+          : "X Account must be in the format 'https://x.com/username' or 'x.com/username'.";
+      case "description":
+        return value.trim() ? undefined : "Description is required.";
+      case "whyHunt":
+        return value.trim() ? undefined : "This field is required.";
+      case "skill":
+        return value ? undefined : "A skill must be selected.";
+      default:
+        return undefined;
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {
+      name: validateField("name", formData.name),
+      xAccount: validateField("xAccount", formData.xAccount),
+      description: validateField("description", formData.description),
+      whyHunt: validateField("whyHunt", formData.whyHunt),
+      skill: validateField("skill", formData.skill),
+      avatar: avatarFile ? undefined : "An avatar image is required.",
+    };
+    setErrors(newErrors);
+    return Object.values(newErrors).every((error) => !error);
+  };
+
   // --- Event Handlers ---
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      // Check file size
+      if (file.size > MAX_FILE_SIZE) {
+        setErrors((prev) => ({ ...prev, avatar: "File size must be less than 1 MB." }));
+        toast.error("File size must be less than 1 MB.");
+        return;
+      }
       setAvatarFile(file);
       if (avatarPreview) URL.revokeObjectURL(avatarPreview);
       setAvatarPreview(URL.createObjectURL(file));
-      if (errors.avatar) {
-        setErrors((prev) => ({ ...prev, avatar: undefined }));
-      }
+      setErrors((prev) => ({ ...prev, avatar: undefined }));
     }
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
-    if (errors[id as keyof FormErrors]) {
-      setErrors((prev) => ({ ...prev, [id]: undefined }));
-    }
+    // Validate the changed field immediately
+    const error = validateField(id as keyof FormState, value);
+    setErrors((prev) => ({ ...prev, [id]: error }));
   };
 
   const handleSkillChange = (value: string) => {
     setFormData((prev) => ({ ...prev, skill: value }));
-    if (errors.skill) {
-      setErrors((prev) => ({ ...prev, skill: undefined }));
-    }
-  };
-
-  // --- Form Validation ---
-
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Agent name is required.";
-    if (!formData.xAccount.trim()) newErrors.xAccount = "X Account is required.";
-    if (!formData.description.trim()) newErrors.description = "Description is required.";
-    if (!formData.whyHunt.trim()) newErrors.whyHunt = "This field is required.";
-    if (!formData.skill) newErrors.skill = "A skill must be selected.";
-    if (!avatarFile) newErrors.avatar = "An avatar image is required.";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    // Validate skill immediately
+    const error = validateField("skill", value);
+    setErrors((prev) => ({ ...prev, skill: error }));
   };
 
   // --- Form Submission ---
@@ -112,8 +140,14 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose })
       return;
     }
 
-    if (!validateForm()) {
-      toast.error("Please fill out all required fields.");
+    // Validate form and get errors
+    const isValid = validateForm();
+    if (!isValid) {
+      if (errors.xAccount) {
+        toast.error(errors.xAccount);
+      } else {
+        toast.error("Please fill out all required fields.");
+      }
       return;
     }
 
@@ -140,13 +174,20 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose })
         throw new Error(errorData.error || "Submission failed.");
       }
 
+      const agent: Agent = await response.json();
       toast.success("Agent submitted successfully!", { id: loadingToast });
-
-      // Refetch the data after the agent that's just been created
       mutate("/api/agents");
+      onSuccess({
+        id: agent.id,
+        name: agent.name,
+        xAccount: agent.xAccount,
+        description: agent.description,
+        whyHunt: agent.whyHunt,
+        skill: agent.skill,
+        agentHandle: agent.xAccount.split("/").pop() || agent.name,
+      });
       onClose();
     } catch (error: unknown) {
-      // MODIFIED: Changed `any` to `unknown` for type safety
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
