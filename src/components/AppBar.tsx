@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "@/components/ui/button";
 import { NewAgentModal } from "./NewAgentModal";
@@ -19,6 +21,8 @@ export const AppBar: React.FC = () => {
     | null
   >(null);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const pathname = usePathname();
 
   const handleHuntClick = () => {
     setModalOpen(true);
@@ -50,27 +54,36 @@ export const AppBar: React.FC = () => {
     ? "h-[42px] w-[135px] rounded-[5px] bg-[var(--brand-blue)] text-white border-2 border-[var(--brand-blue)] hover:bg-[var(--brand-blue)] hover:cursor-pointer"
     : "h-[42px] w-[135px] text-brand-blue hover:cursor-pointer";
 
+  const getLinkClass = (href: string) => {
+    const baseStyle = `${centerNavStyle} p-0`;
+    // Highlight if the current path matches the link's href
+    if (pathname === href) {
+      return `${baseStyle} text-[var(--brand-blue)]`;
+    }
+    return baseStyle;
+  };
+
   return (
     <>
       <header className="sticky top-0 z-40 w-full bg-white shadow-sm">
         <nav className="container mx-auto flex h-[84px] items-center justify-between px-6">
           {/* Left: Logo */}
-          <div className="flex items-center space-x-3">
+          <Link href="/top" className="flex items-center space-x-3">
             <Image src="/agent-icon.svg" alt="Agent Hunt Logo" width={31} height={35} />
             <span className="text-3xl font-normal tracking-tighter hidden md:inline">AgentHunt</span>
-          </div>
+          </Link>
 
           {/* Center: Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Button variant="ghost" className={`${centerNavStyle} p-0 text-[var(--brand-blue)]`}>
+            <Link href="/top" className={getLinkClass("/top")}>
               TOP
-            </Button>
+            </Link>
             <Button variant="ghost" className={`${centerNavStyle} ${huntButtonClass}`} onClick={handleHuntClick}>
               + HUNT
             </Button>
-            <Button variant="ghost" className={`${centerNavStyle} p-0`}>
+            <Link href="/new" className={getLinkClass("/new")}>
               NEW
-            </Button>
+            </Link>
           </div>
 
           {/* Right: Desktop Navigation */}
@@ -148,15 +161,15 @@ export const AppBar: React.FC = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden bg-white shadow-md absolute w-full">
             <div className="flex flex-col items-center space-y-4 p-4">
-              <Button variant="ghost" className={centerNavStyle} onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/top" className={getLinkClass("/top")} onClick={() => setMobileMenuOpen(false)}>
                 TOP
-              </Button>
+              </Link>
               <Button variant="ghost" className={`${centerNavStyle} ${huntButtonClass}`} onClick={handleHuntClick}>
                 + HUNT
               </Button>
-              <Button variant="ghost" className={centerNavStyle} onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/new" className={getLinkClass("/new")} onClick={() => setMobileMenuOpen(false)}>
                 NEW
-              </Button>
+              </Link>
               <Button
                 variant="link"
                 className={`${navTextStyle} hover:bg-transparent hover:cursor-pointer`}
