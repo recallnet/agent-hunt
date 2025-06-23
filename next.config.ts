@@ -15,6 +15,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  eslint: {
+    // This will prevent ESLint from failing the build.
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;

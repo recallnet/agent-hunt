@@ -23,3 +23,12 @@ export type NewAgentModalProps = {
     }
   ) => void;
 };
+
+export type AgentFields = {
+  name: string;
+  xAccount: string;
+  description: string;
+  whyHunt: string;
+  skill: Agent["skill"]; // This ensures 'skill' matches the Prisma Agent model's skill type
+  authorAddress: string;
+};

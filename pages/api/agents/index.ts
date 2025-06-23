@@ -1,11 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { PutObjectCommand, PutObjectCommandInput } from "@aws-sdk/client-s3";
 import type { Agent } from "@prisma/client";
-import prisma from "../../utils/db";
-import { s3Client } from "../../utils/s3Client";
+import prisma from "../../../utils/db";
+import { s3Client } from "../../../utils/s3Client";
 import fs from "fs";
 import formidable from "formidable";
-import { AgentFields, ErrorResponse } from "../../utils/types";
+import { AgentFields, ErrorResponse } from "../../../utils/types";
 
 export const config = {
   api: {

@@ -15,23 +15,57 @@ enum Skill {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  address   String   @unique
-  agents    Agent[] // A user can have many agents
+  id            Int            @id @default(autoincrement())
+  createdAt     DateTime       @default(now())
+  address       String         @unique
+  agents        Agent[]        // A user can have many agents
+  upvotes       Upvote[]
+  duplicateFlags DuplicateFlag[]
+  spamFlags     SpamFlag[]
 }
 
 model Agent {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  name        String
-  avatarUrl   String
-  xAccount    String
-  description String
-  whyHunt     String
-  skill       Skill
+  id            Int            @id @default(autoincrement())
+  createdAt     DateTime       @default(now())
+  name          String
+  avatarUrl     String
+  xAccount      String
+  description   String
+  whyHunt       String
+  skill         Skill
+  author        User           @relation(fields: [authorId], references: [id])
+  authorId      Int
+  upvotes       Upvote[]
+  duplicateFlags DuplicateFlag[]
+  spamFlags     SpamFlag[]
+}
 
-  // Relation to User
-  author   User @relation(fields: [authorId], references: [id])
-  authorId Int
+model Upvote {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId   Int
+  @@unique([userId, agentId]) // Ensure one upvote per user per agent
+}
+
+model DuplicateFlag {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId   Int
+  @@unique([userId, agentId]) // Ensure one duplicate flag per user per agent
+}
+
+model SpamFlag {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId   Int
+  @@unique([userId, agentId]) // Ensure one spam flag per user per agent
 }
