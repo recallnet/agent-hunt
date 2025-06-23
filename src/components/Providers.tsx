@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { RainbowKitProvider, getDefaultWallets } from "@rainbow-me/rainbowkit";
 import { WagmiProvider, createConfig, http } from "wagmi";

@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,12 +6,16 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "@/components/ui/button";
 import { NewAgentModal } from "./NewAgentModal";
 import { ShareXModal } from "./ShareXModal";
+import { RulesModal } from "./RulesModal"; // Import the new modal
 import { Menu } from "lucide-react";
 import type { Agent } from "@prisma/client";
+import { useAccount } from "wagmi";
+import toast from "react-hot-toast";
 
 export const AppBar: React.FC = () => {
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isNewAgentModalOpen, setNewAgentModalOpen] = useState(false);
   const [isShareXModalOpen, setShareXModalOpen] = useState(false);
+  const [isRulesModalOpen, setRulesModalOpen] = useState(false); // State for the Rules modal
   const [shareXAgentData, setShareXAgentData] = useState<
     | (Pick<Agent, "id" | "name" | "xAccount" | "description" | "whyHunt" | "skill"> & {
         agentHandle?: string;
@@ -23,14 +25,24 @@ export const AppBar: React.FC = () => {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const pathname = usePathname();
+  const { isConnected } = useAccount();
 
   const handleHuntClick = () => {
-    setModalOpen(true);
+    if (isConnected) {
+      setNewAgentModalOpen(true);
+    } else {
+      toast.error("Please connect your wallet to hunt an agent.");
+    }
     setMobileMenuOpen(false);
   };
 
-  const handleCloseModal = () => {
-    setModalOpen(false);
+  const handleRulesClick = () => {
+    setRulesModalOpen(true);
+    setMobileMenuOpen(false); // Also close the mobile menu if open
+  };
+
+  const handleCloseNewAgentModal = () => {
+    setNewAgentModalOpen(false);
   };
 
   const handleNewAgentSuccess = (
@@ -50,17 +62,13 @@ export const AppBar: React.FC = () => {
   const navTextStyle = "font-bold text-xl tracking-tighter";
   const centerNavStyle = `text-2xl ${navTextStyle} hover:bg-transparent hover:cursor-pointer`;
 
-  const huntButtonClass = isModalOpen
+  const huntButtonClass = isNewAgentModalOpen
     ? "h-[42px] w-[135px] rounded-[5px] bg-[var(--brand-blue)] text-white border-2 border-[var(--brand-blue)] hover:bg-[var(--brand-blue)] hover:cursor-pointer"
     : "h-[42px] w-[135px] text-brand-blue hover:cursor-pointer";
 
   const getLinkClass = (href: string) => {
     const baseStyle = `${centerNavStyle} p-0`;
-    // Highlight if the current path matches the link's href
-    if (pathname === href) {
-      return `${baseStyle} text-[var(--brand-blue)]`;
-    }
-    return baseStyle;
+    return pathname === href ? `${baseStyle} text-[var(--brand-blue)]` : baseStyle;
   };
 
   return (
@@ -91,6 +99,7 @@ export const AppBar: React.FC = () => {
             <Button
               variant="link"
               className={`${navTextStyle} p-0 h-auto hover:bg-transparent hover:no-underline hover:cursor-pointer`}
+              onClick={handleRulesClick} // Updated onClick handler
             >
               RULES
             </Button>
@@ -173,7 +182,7 @@ export const AppBar: React.FC = () => {
               <Button
                 variant="link"
                 className={`${navTextStyle} hover:bg-transparent hover:cursor-pointer`}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={handleRulesClick} // Updated onClick handler
               >
                 RULES
               </Button>
@@ -181,12 +190,17 @@ export const AppBar: React.FC = () => {
           </div>
         )}
       </header>
-      {/* Dummy comment */}
 
-      <NewAgentModal isOpen={isModalOpen} onClose={handleCloseModal} onSuccess={handleNewAgentSuccess} />
+      {/* Modals */}
+      <NewAgentModal
+        isOpen={isNewAgentModalOpen}
+        onClose={handleCloseNewAgentModal}
+        onSuccess={handleNewAgentSuccess}
+      />
       {shareXAgentData && (
         <ShareXModal isOpen={isShareXModalOpen} onClose={handleCloseShareXModal} agentData={shareXAgentData} />
       )}
+      <RulesModal isOpen={isRulesModalOpen} onClose={() => setRulesModalOpen(false)} />
     </>
   );
 };

@@ -32,3 +32,13 @@ export type AgentFields = {
   skill: Agent["skill"]; // This ensures 'skill' matches the Prisma Agent model's skill type
   authorAddress: string;
 };
+
+// Define the extended Agent type that includes the upvote count
+export type EnhancedAgent = Agent & {
+  author: {
+    address: string;
+  } | null;
+  _count: {
+    upvotes: number;
+  };
+};

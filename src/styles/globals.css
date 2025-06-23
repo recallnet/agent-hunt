@@ -45,6 +45,7 @@
 
 :root {
   --brand-blue: #2934ff;
+  --brand-blue-rgb: 41, 52, 255; /* RGB version for glow effect */
   --brand-blue-hover: #202aff;
   --brand-gray: #d9d9d9;
   --radius: 0.625rem;
@@ -121,5 +122,12 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Added for the card glow effect */
+@layer utilities {
+  .shadow-glow {
+    box-shadow: 0 0 15px 2px rgba(var(--brand-blue-rgb), 0.4);
   }
 }

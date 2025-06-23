@@ -15,11 +15,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  eslint: {
-    // This will prevent ESLint from failing the build.
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/top",
+        permanent: false, // Use `true` (308 redirect) for permanent moves, good for SEO
+      },
+    ];
   },
 };
 

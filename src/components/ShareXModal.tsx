@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import type { Agent } from "@prisma/client";
@@ -29,10 +27,21 @@ export const ShareXModal: React.FC<ShareXModalProps> = ({ isOpen, onClose, agent
 
   // --- X Post Creation ---
   const handleCreateXPost = () => {
+    // The text content for the tweet, which remains unchanged.
     const agentHandle = agentData.agentHandle || agentData.xAccount.split("/").pop() || agentData.name;
-    const postText = `Check out this new agent added to Recall’s agent hunt\nagenthunt.recallnet.network/${agentData.id}\n@${agentHandle} @recallnet`;
+    const postText = `Check out this new agent added to Recall’s agent hunt\n@${agentHandle} @recallnet`;
+
+    // The specific URL to be used for the preview card.
+    const shareUrl = `https://agenthunt.recall.network/agents/${agentData.id}`;
+
+    // Encode the components for the final URL.
     const encodedPostText = encodeURIComponent(postText);
-    const xPostUrl = `https://x.com/intent/tweet?text=${encodedPostText}`;
+    const encodedShareUrl = encodeURIComponent(shareUrl);
+
+    // Add the `url` parameter to the intent link. This tells X which URL to preview
+    // without altering the pre-filled text.
+    const xPostUrl = `https://x.com/intent/tweet?text=${encodedPostText}&url=${encodedShareUrl}`;
+
     window.open(xPostUrl, "_blank");
   };
 
