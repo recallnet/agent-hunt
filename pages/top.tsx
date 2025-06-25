@@ -1,7 +1,7 @@
 import useSWR from "swr";
-import { AgentCard } from "@components/AgentCard";
 import { EnhancedAgent } from "@utils/types";
 import { fetcher } from "@utils/helper-functions";
+import { AgentParent } from "@/components/Agent/AgentParent";
 
 export default function TopPage() {
   const { data: agents, error, isLoading } = useSWR<EnhancedAgent[]>("/api/agents?sortBy=top", fetcher);
@@ -12,7 +12,7 @@ export default function TopPage() {
   return (
     <div className="container mx-auto px-6 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {agents && agents.map((agent) => <AgentCard key={agent.id} agent={agent} />)}
+        {agents && agents.map((agent) => <AgentParent key={agent.id} agent={agent} cardView={true} />)}
       </div>
     </div>
   );

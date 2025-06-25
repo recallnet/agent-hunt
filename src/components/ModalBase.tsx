@@ -28,7 +28,7 @@ export const ModalBase: React.FC<ModalBaseProps> = ({ isOpen, onClose, children 
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-12 text-2xl text-gray-500 hover:text-gray-800 z-10"
+          className="absolute top-4 right-12 text-2xl text-gray-500 hover:text-gray-800 z-10 cursor-pointer"
           aria-label="Close modal"
         >
           ×

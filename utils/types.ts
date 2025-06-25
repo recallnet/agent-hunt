@@ -1,4 +1,4 @@
-import { Agent } from "@prisma/client";
+import { Agent, Upvote, DuplicateFlag, SpamFlag } from "@prisma/client";
 
 export type ErrorResponse = {
   error: string;
@@ -33,12 +33,27 @@ export type AgentFields = {
   authorAddress: string;
 };
 
-// Define the extended Agent type that includes the upvote count
+// Define the extended Agent type that includes relational arrays
 export type EnhancedAgent = Agent & {
-  author: {
-    address: string;
-  } | null;
-  _count: {
-    upvotes: number;
-  };
+  upvoters: string[];
+  authorAddress: string;
+  duplicateFlags: DuplicateFlag[];
+  spamFlags: SpamFlag[];
 };
+
+export type UserActions = {
+  upvoted: boolean;
+  duplicateFlagged: boolean;
+  spamFlagged: boolean;
+};
+
+export type ActionButtonsProps = {
+  isUpvoted: boolean;
+  upvoteCount: number;
+  isDuplicateFlagged: boolean;
+  isSpamFlagged: boolean;
+  isLoading: boolean;
+  handleAction: HandleAction;
+};
+
+export type HandleAction = (e: React.MouseEvent, action: "upvote" | "duplicate" | "spam") => Promise<void>;

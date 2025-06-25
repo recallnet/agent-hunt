@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { PutObjectCommand, PutObjectCommandInput } from "@aws-sdk/client-s3";
-import type { Agent } from "@prisma/client";
+import type { Agent, DuplicateFlag, SpamFlag, Upvote, User } from "@prisma/client";
 import prisma from "@utils/db";
 import { s3Client } from "@utils/s3Client";
 import fs from "fs";
@@ -12,6 +12,29 @@ export const config = {
     bodyParser: false,
   },
 };
+
+// This type represents the raw data structure returned from the Prisma query
+type AgentWithRelations = Agent & {
+  upvotes: (Upvote & { user: { address: string } })[];
+  duplicateFlags: DuplicateFlag[];
+  spamFlags: SpamFlag[];
+  author: { address: string };
+};
+
+/**
+ * Transforms a raw agent object from Prisma into the EnhancedAgent structure.
+ * It adds the author's address, creates the `upvoters` list, and carries over relations.
+ * @param agent - The raw agent data with relations.
+ * @returns An EnhancedAgent object.
+ */
+function transformToEnhancedAgent(agent: AgentWithRelations): EnhancedAgent {
+  const { upvotes, author, ...restOfAgent } = agent;
+  return {
+    ...restOfAgent,
+    authorAddress: author.address,
+    upvoters: upvotes.map((upvote) => upvote.user.address),
+  };
+}
 
 // --- Main API Handler ---
 export default async function handler(
@@ -32,43 +55,54 @@ export default async function handler(
 
 /**
  * Handles GET requests.
- * Fetches a single agent if an `id` query parameter is provided.
- * Otherwise, fetches a list of agents with dynamic sorting based on `sortBy` ('new' or 'top').
+ * Fetches a single agent or a list of agents with transformed upvoter and author data.
  */
 async function handleGet(req: NextApiRequest, res: NextApiResponse<EnhancedAgent | EnhancedAgent[] | ErrorResponse>) {
   const { id, sortBy } = req.query;
 
+  // --- Common Include Clause for Relations (Updated) ---
+  const includeClause = {
+    upvotes: {
+      orderBy: {
+        createdAt: "desc" as const, // Most recent upvotes first
+      },
+      include: {
+        user: {
+          select: {
+            address: true,
+          },
+        },
+      },
+    },
+    author: {
+      select: {
+        address: true,
+      },
+    },
+    duplicateFlags: true,
+    spamFlags: true,
+  };
+
   // --- Fetch a single agent by ID ---
   if (id && typeof id === "string") {
-    // Convert the 'id' from a string to a number
     const numericId = parseInt(id, 10);
-
-    // Check if the parsed ID is a valid number. If not, return a bad request error.
     if (isNaN(numericId)) {
       return res.status(400).json({ error: "Invalid agent ID. ID must be a number." });
     }
 
     try {
       const agent = await prisma.agent.findUnique({
-        // Use the converted numeric ID in the where clause
         where: { id: numericId },
-        include: {
-          author: {
-            select: {
-              address: true,
-            },
-          },
-          _count: {
-            select: { upvotes: true },
-          },
-        },
+        include: includeClause,
       });
 
       if (!agent) {
         return res.status(404).json({ error: "Agent not found." });
       }
 
-      return res.status(200).json(agent as EnhancedAgent);
+      // The 'as' cast is safe here because we've updated the includeClause
+      const enhancedAgent = transformToEnhancedAgent(agent as AgentWithRelations);
+      return res.status(200).json(enhancedAgent);
     } catch (error) {
       console.error(`Failed to fetch agent with id ${id}:`, error);
       return res.status(500).json({ error: "Internal server error." });
@@ -77,40 +111,24 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse<EnhancedAgent
 
   // --- Fetch a list of agents ---
   let orderByClause;
-
-  // Determine sorting based on the 'sortBy' query parameter
   switch (sortBy) {
     case "top":
-      orderByClause = {
-        upvotes: {
-          _count: "desc" as const,
-        },
-      };
+      orderByClause = { upvotes: { _count: "desc" as const } };
       break;
     case "new":
-    default: // Default to sorting by newest
-      orderByClause = {
-        createdAt: "desc" as const,
-      };
+    default:
+      orderByClause = { createdAt: "desc" as const };
       break;
   }
 
   try {
     const agents = await prisma.agent.findMany({
       orderBy: orderByClause,
-      include: {
-        author: {
-          select: {
-            address: true,
-          },
-        },
-        // Always include the count of upvotes
-        _count: {
-          select: { upvotes: true },
-        },
-      },
+      include: includeClause,
     });
-    return res.status(200).json(agents as EnhancedAgent[]);
+
+    const enhancedAgents = agents.map((agent) => transformToEnhancedAgent(agent as AgentWithRelations));
+    return res.status(200).json(enhancedAgents);
   } catch (error) {
     console.error("Failed to fetch agents:", error);
     return res.status(500).json({ error: "Internal server error." });
