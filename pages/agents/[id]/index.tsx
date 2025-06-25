@@ -7,7 +7,7 @@ import { EnhancedAgent } from "@utils/types";
 import { Label } from "@/components/ui/label";
 import { fetcher } from "@utils/helper-functions";
 
-// Helper component for displaying labeled information
+// Helper component for displaying label information
 const InfoField: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div>
     <Label className="text-base font-bold">{label}</Label>
