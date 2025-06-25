@@ -26,7 +26,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+  const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3 MB
 
   useEffect(() => {
     if (!isOpen) {
@@ -82,8 +82,8 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > MAX_FILE_SIZE) {
-        setErrors((prev) => ({ ...prev, avatar: "File size must be less than 1 MB." }));
-        toast.error("File size must be less than 1 MB.");
+        setErrors((prev) => ({ ...prev, avatar: "File size must be less than 3 MB." }));
+        toast.error("File size must be less than 3 MB.");
         return;
       }
       setAvatarFile(file);

@@ -6,7 +6,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "@/components/ui/button";
 import { NewAgentModal } from "./NewAgentModal";
 import { ShareXModal } from "./ShareXModal";
-import { RulesModal } from "./RulesModal"; // Import the new modal
+import { RulesModal } from "./RulesModal";
 import { Menu } from "lucide-react";
 import type { Agent } from "@prisma/client";
 import { useAccount } from "wagmi";
@@ -59,8 +59,8 @@ export const AppBar: React.FC = () => {
     setShareXAgentData(null);
   };
 
-  const navTextStyle = "font-bold text-xl tracking-tighter";
-  const centerNavStyle = `text-2xl ${navTextStyle} hover:bg-transparent hover:cursor-pointer`;
+  const navTextStyle = "font-bold text-base tracking-tighter";
+  const centerNavStyle = `text-xl ${navTextStyle} hover:bg-transparent hover:cursor-pointer`;
 
   const huntButtonClass = isNewAgentModalOpen
     ? "h-[42px] w-[135px] rounded-[5px] bg-[var(--brand-blue)] text-white border-2 border-[var(--brand-blue)] hover:bg-[var(--brand-blue)] hover:cursor-pointer"
@@ -77,8 +77,8 @@ export const AppBar: React.FC = () => {
         <nav className="container mx-auto flex h-[84px] items-center justify-between px-6">
           {/* Left: Logo */}
           <Link href="/top" className="flex items-center space-x-3">
-            <Image src="/agent-icon.svg" alt="Agent Hunt Logo" width={31} height={35} />
-            <span className="text-3xl font-normal tracking-tighter hidden md:inline">AgentHunt</span>
+            <Image src="/agent-icon.svg" alt="Agent Hunt Logo" width={28} height={32} />
+            <span className="text-2xl font-normal tracking-tighter hidden md:inline">AgentHunt</span>
           </Link>
 
           {/* Center: Desktop Navigation */}
@@ -103,63 +103,12 @@ export const AppBar: React.FC = () => {
             >
               RULES
             </Button>
-            <div className={navTextStyle}>
-              <ConnectButton.Custom>
-                {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted }) => {
-                  const ready = mounted;
-                  const connected = ready && account && chain;
-                  return (
-                    <div
-                      {...(!ready && {
-                        "aria-hidden": true,
-                        style: { opacity: 0, pointerEvents: "none", userSelect: "none" },
-                      })}
-                    >
-                      {(() => {
-                        if (!connected) {
-                          return (
-                            <button
-                              onClick={openConnectModal}
-                              type="button"
-                              className={`${navTextStyle} hover:cursor-pointer hover:bg-transparent`}
-                            >
-                              CONNECT WALLET
-                            </button>
-                          );
-                        }
-                        if (chain.unsupported) {
-                          return (
-                            <button
-                              onClick={openChainModal}
-                              type="button"
-                              className={`${navTextStyle} text-red-500 hover:cursor-pointer hover:bg-transparent`}
-                            >
-                              WRONG NETWORK
-                            </button>
-                          );
-                        }
-                        return (
-                          <button
-                            onClick={openAccountModal}
-                            type="button"
-                            className={`${navTextStyle} hover:cursor-pointer hover:bg-transparent`}
-                          >
-                            {account.displayName}
-                          </button>
-                        );
-                      })()}
-                    </div>
-                  );
-                }}
-              </ConnectButton.Custom>
-            </div>
+            <ConnectButton />
           </div>
 
           {/* Mobile Menu Button & Connect Wallet */}
           <div className="md:hidden flex items-center space-x-4">
-            <div className={navTextStyle}>
-              <ConnectButton showBalance={false} chainStatus="none" label="CONNECT" accountStatus="avatar" />
-            </div>
+            <ConnectButton showBalance={false} chainStatus="none" label="CONNECT" accountStatus="avatar" />
             <button onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}>
               <Menu className="w-8 h-8" />
             </button>
@@ -182,7 +131,7 @@ export const AppBar: React.FC = () => {
               <Button
                 variant="link"
                 className={`${navTextStyle} hover:bg-transparent hover:cursor-pointer`}
-                onClick={handleRulesClick} // Updated onClick handler
+                onClick={handleRulesClick}
               >
                 RULES
               </Button>

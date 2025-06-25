@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { PutObjectCommand, PutObjectCommandInput } from "@aws-sdk/client-s3";
-import type { Agent, DuplicateFlag, SpamFlag, Upvote, User } from "@prisma/client";
+import type { Agent, DuplicateFlag, SpamFlag, Upvote } from "@prisma/client";
 import prisma from "@utils/db";
 import { s3Client } from "@utils/s3Client";
 import fs from "fs";

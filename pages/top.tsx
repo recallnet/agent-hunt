@@ -10,8 +10,8 @@ export default function TopPage() {
   if (isLoading) return <div>Loading agents...</div>;
 
   return (
-    <div className="container mx-auto px-6 py-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div className="w-full max-w-screen-xxl mx-auto">
+      <div className="grid grid-cols-[repeat(auto-fit,346px)] gap-0 justify-center">
         {agents && agents.map((agent) => <AgentParent key={agent.id} agent={agent} cardView={true} />)}
       </div>
     </div>

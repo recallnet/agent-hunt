@@ -2,10 +2,10 @@ import React from "react";
 import toast from "react-hot-toast";
 import useSWR, { useSWRConfig } from "swr";
 import { AgentCard } from "./AgentCard";
-import { AgentModalView } from "./AgentModalView";
 import { ActionButtonsProps, EnhancedAgent, HandleAction, UserActions } from "@utils/types";
 import { fetcher } from "@utils/helper-functions";
 import { useAccount } from "wagmi";
+import { AgentContentView } from "./AgentContentView";
 
 type AgentParentProps = {
   agent: EnhancedAgent;
@@ -84,5 +84,11 @@ export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView }) => 
     return <AgentCard agent={agent} actionProps={actionProps} />;
   }
 
-  return <AgentModalView agent={agent} actionProps={actionProps} />;
+  return (
+    <>
+      <div className="relative max-h-[909px] overflow-y-auto bg-white rounded-lg">
+        <AgentContentView agent={agent} actionProps={actionProps} />
+      </div>
+    </>
+  );
 };

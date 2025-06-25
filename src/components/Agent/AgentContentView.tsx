@@ -1,15 +1,10 @@
-import { ActionButtonsProps, EnhancedAgent } from "@utils/types";
-import Image from "next/image";
 import React from "react";
-import { ActionButtons } from "./ActionButtons";
-import { formatSkill } from "@utils/helper-functions";
+import Image from "next/image";
 import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
-
-type AgentModalViewProps = {
-  agent: EnhancedAgent;
-  actionProps: ActionButtonsProps;
-};
+import { ActionButtons } from "./ActionButtons";
+import { formatSkill } from "@utils/helper-functions";
+import { ActionButtonsProps, EnhancedAgent } from "@utils/types";
 
 const MAX_DISPLAY_COUNT = 16; // 4 columns * 4 rows
 
@@ -33,12 +28,17 @@ const UpvoterItem: React.FC<UpvoterItemProps> = ({ address }) => {
   return (
     <div className="flex items-center gap-2" title={address}>
       <Image src="/circle-icon.svg" alt="Upvoter icon" width={24} height={24} />
-      <span style={{ color: "var(--brand-gray-text" }}>{displayName}</span>
+      <span style={{ color: "var(--brand-gray-text)" }}>{displayName}</span>
     </div>
   );
 };
 
-export const AgentModalView: React.FC<AgentModalViewProps> = ({ agent, actionProps }) => {
+type AgentContentViewProps = {
+  agent: EnhancedAgent;
+  actionProps: ActionButtonsProps;
+};
+
+export const AgentContentView: React.FC<AgentContentViewProps> = ({ agent, actionProps }) => {
   const formattedDate = new Date(agent.createdAt).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -46,9 +46,12 @@ export const AgentModalView: React.FC<AgentModalViewProps> = ({ agent, actionPro
   });
 
   return (
-    <div className="relative max-h-[909px] overflow-y-auto bg-white rounded-lg">
+    <div className="bg-white rounded-lg w-full">
       {/* Banner */}
-      <div className="h-[161px] w-full" style={{ background: "linear-gradient(90deg, #1A1A1A 0%, #000000 100%)" }} />
+      <div
+        className="h-[161px] w-full rounded-t-lg"
+        style={{ background: "linear-gradient(90deg, #1A1A1A 0%, #000000 100%)" }}
+      />
 
       {/* Main Content Area */}
       <div className="p-12 md:p-14">
@@ -79,7 +82,6 @@ export const AgentModalView: React.FC<AgentModalViewProps> = ({ agent, actionPro
           {/* Right Column: Details & Actions */}
           <div className="flex-grow mt-0 md:-mt-8">
             <h2 className="text-2xl font-bold text-gray-900">{agent.name}</h2>
-
             <a
               href={agent.xAccount}
               target="_blank"
@@ -89,7 +91,6 @@ export const AgentModalView: React.FC<AgentModalViewProps> = ({ agent, actionPro
             >
               {agent.xAccount}
             </a>
-
             <div className="relative h-[60px]">
               <p
                 className="mt-4 text-base leading-relaxed line-clamp-2 absolute top-0"
@@ -98,8 +99,6 @@ export const AgentModalView: React.FC<AgentModalViewProps> = ({ agent, actionPro
                 {agent.description}
               </p>
             </div>
-
-            {/* Action Buttons */}
             <div className="w-full max-w-[204px] mt-[25px]">
               <ActionButtons {...actionProps} />
             </div>
@@ -124,6 +123,7 @@ export const AgentModalView: React.FC<AgentModalViewProps> = ({ agent, actionPro
           </div>
         </div>
 
+        {/* Upvoted By Section */}
         {agent.upvoters && agent.upvoters.length > 0 && (
           <>
             <hr className="my-8 border-gray-200 w-full" />
@@ -135,7 +135,7 @@ export const AgentModalView: React.FC<AgentModalViewProps> = ({ agent, actionPro
                 ))}
               </div>
               {agent.upvoters.length > MAX_DISPLAY_COUNT && (
-                <p className="text-sm mt-4" style={{ color: "var(--brand-gray-text" }}>
+                <p className="text-sm mt-4" style={{ color: "var(--brand-gray-text)" }}>
                   + {agent.upvoters.length - MAX_DISPLAY_COUNT} others
                 </p>
               )}

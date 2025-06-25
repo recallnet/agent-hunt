@@ -16,7 +16,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent, actionProps }) => {
 
   return (
     <>
-      <div className="relative h-[399px] w-[346px] overflow-hidden border border-gray-200 group transition-all duration-300 hover:shadow-glow">
+      <div className="relative h-[399px] w-full overflow-hidden group transition-all duration-300 hover:shadow-glow ring-1 ring-gray-200">
         <div className="relative w-full h-full cursor-pointer" onClick={() => setModalOpen(true)}>
           <Image
             src={agent.avatarUrl}
@@ -27,7 +27,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent, actionProps }) => {
             priority
           />
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-[124px] bg-white/90 backdrop-blur-sm p-4 rounded-t-2xl">
+        <div className="absolute bottom-0 left-0 right-0 h-[124px] bg-white/90 p-4 rounded-t-2xl">
           <div className="flex h-full flex-col justify-between gap-1">
             <div>
               <span className="text-base font-medium text-blue-600">{formatSkill(agent.skill)}</span>
@@ -35,9 +35,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent, actionProps }) => {
             <div className="-mt-4">
               <h3 className="text-2xl font-bold text-gray-900 truncate">{agent.name}</h3>
             </div>
-            <div className="flex items-center justify-between border-t border-gray-200 pt-2">
-              <ActionButtons {...actionProps} />
-            </div>
+            <ActionButtons {...actionProps} />
           </div>
         </div>
       </div>
