@@ -4,7 +4,7 @@ import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { ActionButtons } from "./ActionButtons";
 import { formatSkill } from "@utils/helper-functions";
-import { ActionButtonsProps, EnhancedAgent } from "@utils/types";
+import { AgentCardProps } from "@utils/types";
 
 const MAX_DISPLAY_COUNT = 16; // 4 columns * 4 rows
 
@@ -33,12 +33,7 @@ const UpvoterItem: React.FC<UpvoterItemProps> = ({ address }) => {
   );
 };
 
-type AgentContentViewProps = {
-  agent: EnhancedAgent;
-  actionProps: ActionButtonsProps;
-};
-
-export const AgentContentView: React.FC<AgentContentViewProps> = ({ agent, actionProps }) => {
+export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps }) => {
   const formattedDate = new Date(agent.createdAt).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",

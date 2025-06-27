@@ -9,13 +9,13 @@ import { useAccount } from "wagmi";
 import toast from "react-hot-toast";
 import { useSWRConfig } from "swr";
 import type { Agent } from "@prisma/client";
-import { FormErrors, FormState, NewAgentModalProps } from "@utils/types";
+import { FormErrors, AgentFormState, NewAgentModalProps } from "@utils/types";
 import { ModalBase } from "./ModalBase";
 
 export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const { address, isConnected } = useAccount();
   const { mutate } = useSWRConfig();
-  const [formData, setFormData] = useState<FormState>({
+  const [formData, setFormData] = useState<AgentFormState>({
     name: "",
     xAccount: "",
     description: "",
@@ -46,7 +46,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
     };
   }, [avatarPreview]);
 
-  const validateField = (field: keyof FormState, value: string): string | undefined => {
+  const validateField = (field: keyof AgentFormState, value: string): string | undefined => {
     switch (field) {
       case "name":
         return value.trim() ? undefined : "Agent name is required.";
@@ -96,12 +96,12 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
-    const error = validateField(id as keyof FormState, value);
+    const error = validateField(id as keyof AgentFormState, value);
     setErrors((prev) => ({ ...prev, [id]: error }));
   };
 
   const handleSkillChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, skill: value }));
+    setFormData((prev) => ({ ...prev, skill: value as AgentFormState["skill"] }));
     const error = validateField("skill", value);
     setErrors((prev) => ({ ...prev, skill: error }));
   };
@@ -138,7 +138,8 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
       }
       const agent: Agent = await response.json();
       toast.success("Agent submitted successfully!", { id: loadingToast });
-      mutate("/api/agents");
+      mutate("/api/agents?sortBy=new");
+      mutate("/api/agents?sortBy=top");
       onSuccess({
         id: agent.id,
         name: agent.name,
@@ -146,7 +147,6 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
         description: agent.description,
         whyHunt: agent.whyHunt,
         skill: agent.skill,
-        agentHandle: agent.xAccount.split("/").pop() || agent.name,
       });
       onClose();
     } catch (error) {

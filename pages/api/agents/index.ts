@@ -5,7 +5,7 @@ import prisma from "@utils/db";
 import { s3Client } from "@utils/s3Client";
 import fs from "fs";
 import formidable from "formidable";
-import { AgentFields, EnhancedAgent, ErrorResponse } from "@utils/types";
+import { AgentFields, EnhancedAgent, ErrorResponse, PaginatedAgentsResponse } from "@utils/types";
 
 export const config = {
   api: {
@@ -13,7 +13,7 @@ export const config = {
   },
 };
 
-// This type represents the raw data structure returned from the Prisma query
+// This represents the raw data structure from Prisma including all relations.
 type AgentWithRelations = Agent & {
   upvotes: (Upvote & { user: { address: string } })[];
   duplicateFlags: DuplicateFlag[];
@@ -21,10 +21,12 @@ type AgentWithRelations = Agent & {
   author: { address: string };
 };
 
+const AGENTS_PER_PAGE = 50;
+
 /**
  * Transforms a raw agent object from Prisma into the EnhancedAgent structure.
- * It adds the author's address, creates the `upvoters` list, and carries over relations.
- * @param agent - The raw agent data with relations.
+ * It flattens the author's address and creates a simple `upvoters` list of addresses.
+ * @param agent The raw agent data with relations.
  * @returns An EnhancedAgent object.
  */
 function transformToEnhancedAgent(agent: AgentWithRelations): EnhancedAgent {
@@ -39,9 +41,8 @@ function transformToEnhancedAgent(agent: AgentWithRelations): EnhancedAgent {
 // --- Main API Handler ---
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Agent | EnhancedAgent | EnhancedAgent[] | ErrorResponse>
+  res: NextApiResponse<Agent | EnhancedAgent | PaginatedAgentsResponse | ErrorResponse>
 ) {
-  // Route based on HTTP method
   switch (req.method) {
     case "GET":
       return await handleGet(req, res);
@@ -55,29 +56,22 @@ export default async function handler(
 
 /**
  * Handles GET requests.
- * Fetches a single agent or a list of agents with transformed upvoter and author data.
+ * Fetches a single agent by ID or a paginated list of agents.
  */
-async function handleGet(req: NextApiRequest, res: NextApiResponse<EnhancedAgent | EnhancedAgent[] | ErrorResponse>) {
-  const { id, sortBy } = req.query;
+async function handleGet(
+  req: NextApiRequest,
+  res: NextApiResponse<EnhancedAgent | PaginatedAgentsResponse | ErrorResponse>
+) {
+  const { id, sortBy, page = "1" } = req.query;
 
-  // --- Common Include Clause for Relations (Updated) ---
+  // This clause defines the related data we want to fetch with every agent.
   const includeClause = {
     upvotes: {
-      orderBy: {
-        createdAt: "desc" as const, // Most recent upvotes first
-      },
-      include: {
-        user: {
-          select: {
-            address: true,
-          },
-        },
-      },
+      orderBy: { createdAt: "desc" as const },
+      include: { user: { select: { address: true } } },
     },
     author: {
-      select: {
-        address: true,
-      },
+      select: { address: true },
     },
     duplicateFlags: true,
     spamFlags: true,
@@ -100,7 +94,6 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse<EnhancedAgent
         return res.status(404).json({ error: "Agent not found." });
       }
 
-      // The 'as' cast is safe here because we've updated the includeClause
       const enhancedAgent = transformToEnhancedAgent(agent as AgentWithRelations);
       return res.status(200).json(enhancedAgent);
     } catch (error) {
@@ -109,7 +102,14 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse<EnhancedAgent
     }
   }
 
-  // --- Fetch a list of agents ---
+  // --- Fetch a paginated list of agents ---
+  const currentPage = parseInt(page as string, 10);
+  if (isNaN(currentPage) || currentPage < 1) {
+    return res.status(400).json({ error: "Invalid page number." });
+  }
+
+  const skip = (currentPage - 1) * AGENTS_PER_PAGE;
+
   let orderByClause;
   switch (sortBy) {
     case "top":
@@ -125,10 +125,16 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse<EnhancedAgent
     const agents = await prisma.agent.findMany({
       orderBy: orderByClause,
       include: includeClause,
+      take: AGENTS_PER_PAGE + 1, // Fetch one extra to check if there are more pages
+      skip: skip,
     });
 
-    const enhancedAgents = agents.map((agent) => transformToEnhancedAgent(agent as AgentWithRelations));
-    return res.status(200).json(enhancedAgents);
+    const hasMore = agents.length > AGENTS_PER_PAGE;
+    const agentsForPage = agents.slice(0, AGENTS_PER_PAGE);
+
+    const enhancedAgents = agentsForPage.map((agent) => transformToEnhancedAgent(agent as AgentWithRelations));
+
+    return res.status(200).json({ agents: enhancedAgents, hasMore });
   } catch (error) {
     console.error("Failed to fetch agents:", error);
     return res.status(500).json({ error: "Internal server error." });
@@ -137,6 +143,7 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse<EnhancedAgent
 
 /**
  * Handles POST requests to create a new agent.
+ * Parses form data, uploads an avatar to S3, and creates an agent record.
  */
 async function handlePost(req: NextApiRequest, res: NextApiResponse<Agent | ErrorResponse>) {
   try {
@@ -184,7 +191,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse<Agent | Erro
         xAccount: agentData.xAccount,
         description: agentData.description,
         whyHunt: agentData.whyHunt,
-        skill: agentData.skill,
+        skill: agentData.skill as Agent["skill"],
         authorId: user.id,
       },
     });

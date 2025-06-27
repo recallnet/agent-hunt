@@ -1,10 +1,6 @@
 import React from "react";
 import { ModalBase } from "./ModalBase";
-
-type RulesModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
+import { RulesModalProps } from "@utils/types";
 
 export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
   return (

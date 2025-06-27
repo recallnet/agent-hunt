@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@utils/db";
 
-// --- Type Definition for Action Delegates ---
 interface ActionDelegate {
   findUnique(args: { where: { userId_agentId: { userId: number; agentId: number } } }): Promise<object | null>;
 

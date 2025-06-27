@@ -1,15 +1,10 @@
 import React, { useState } from "react";
 import { ActionButtons } from "./ActionButtons";
-import { ActionButtonsProps, EnhancedAgent } from "@utils/types";
+import { AgentCardProps } from "@utils/types";
 import Image from "next/image";
 import { AgentParent } from "./AgentParent";
 import { ModalBase } from "@components/ModalBase";
 import { formatSkill } from "@utils/helper-functions";
-
-type AgentCardProps = {
-  agent: EnhancedAgent;
-  actionProps: ActionButtonsProps;
-};
 
 export const AgentCard: React.FC<AgentCardProps> = ({ agent, actionProps }) => {
   const [modalOpen, setModalOpen] = useState(false);

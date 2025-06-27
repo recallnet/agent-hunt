@@ -1,36 +1,55 @@
-import { Agent, Upvote, DuplicateFlag, SpamFlag } from "@prisma/client";
+import { Agent, DuplicateFlag, SpamFlag } from "@prisma/client";
+import { ReactNode } from "react";
+
+export type AgentFormState = {
+  name: string;
+  xAccount: string;
+  description: string;
+  whyHunt: string;
+  skill: Agent["skill"] | "";
+};
+
+export type AgentFields = AgentFormState & {
+  authorAddress: string;
+};
+
+export type SuccessfulAgentData = AgentFormState & {
+  id: Agent["id"];
+};
+
+export type CommonModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+export type ModalBaseProps = CommonModalProps & {
+  children: ReactNode;
+};
+
+export type RulesModalProps = CommonModalProps;
+
+export type NewAgentModalProps = CommonModalProps & {
+  onSuccess: (agentData: SuccessfulAgentData) => void;
+};
+
+export type ShareXModalProps = CommonModalProps & {
+  agentData: SuccessfulAgentData;
+};
 
 export type ErrorResponse = {
   error: string;
 };
 
-export type FormState = {
-  name: string;
-  xAccount: string;
-  description: string;
-  whyHunt: string;
-  skill: string;
+export type FormErrors = Partial<Record<keyof AgentFormState | "avatar", string>>;
+
+export type AgentCardProps = {
+  agent: EnhancedAgent;
+  actionProps: ActionButtonsProps;
 };
 
-export type FormErrors = Partial<Record<keyof FormState | "avatar", string>>;
-
-export type NewAgentModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: (
-    agentData: Pick<Agent, "id" | "name" | "xAccount" | "description" | "whyHunt" | "skill"> & {
-      agentHandle: string;
-    }
-  ) => void;
-};
-
-export type AgentFields = {
-  name: string;
-  xAccount: string;
-  description: string;
-  whyHunt: string;
-  skill: Agent["skill"]; // This ensures 'skill' matches the Prisma Agent model's skill type
-  authorAddress: string;
+export type AgentParentProps = {
+  agent: EnhancedAgent;
+  cardView: boolean;
 };
 
 // Define the extended Agent type that includes relational arrays
@@ -57,3 +76,9 @@ export type ActionButtonsProps = {
 };
 
 export type HandleAction = (e: React.MouseEvent, action: "upvote" | "duplicate" | "spam") => Promise<void>;
+
+// This represents the structure of our paginated API response.
+export type PaginatedAgentsResponse = {
+  agents: EnhancedAgent[];
+  hasMore: boolean;
+};

@@ -1,10 +1,5 @@
+import { ModalBaseProps } from "@utils/types";
 import React, { useEffect } from "react";
-
-type ModalBaseProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-};
 
 export const ModalBase: React.FC<ModalBaseProps> = ({ isOpen, onClose, children }) => {
   useEffect(() => {

@@ -1,14 +1,6 @@
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import type { Agent } from "@prisma/client";
-
-interface ShareXModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  agentData: Pick<Agent, "id" | "name" | "xAccount" | "description" | "whyHunt" | "skill"> & {
-    agentHandle?: string;
-  };
-}
+import { ShareXModalProps } from "@utils/types";
 
 export const ShareXModal: React.FC<ShareXModalProps> = ({ isOpen, onClose, agentData }) => {
   // Effect to manage body overflow
@@ -27,8 +19,8 @@ export const ShareXModal: React.FC<ShareXModalProps> = ({ isOpen, onClose, agent
 
   // --- X Post Creation ---
   const handleCreateXPost = () => {
-    // The text content for the tweet, which remains unchanged.
-    const agentHandle = agentData.agentHandle || agentData.xAccount.split("/").pop() || agentData.name;
+    // The agent handle is derived from the xAccount URL or the agent's name.
+    const agentHandle = agentData.xAccount.split("/").pop() || agentData.name;
     const postText = `Check out this new agent added to Recall’s agent hunt\n@${agentHandle} @recallnet`;
 
     // The specific URL to be used for the preview card.

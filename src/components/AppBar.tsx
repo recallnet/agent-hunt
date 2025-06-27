@@ -8,20 +8,16 @@ import { NewAgentModal } from "./NewAgentModal";
 import { ShareXModal } from "./ShareXModal";
 import { RulesModal } from "./RulesModal";
 import { Menu } from "lucide-react";
-import type { Agent } from "@prisma/client";
 import { useAccount } from "wagmi";
 import toast from "react-hot-toast";
+import { SuccessfulAgentData } from "@utils/types";
 
 export const AppBar: React.FC = () => {
   const [isNewAgentModalOpen, setNewAgentModalOpen] = useState(false);
   const [isShareXModalOpen, setShareXModalOpen] = useState(false);
   const [isRulesModalOpen, setRulesModalOpen] = useState(false);
-  const [shareXAgentData, setShareXAgentData] = useState<
-    | (Pick<Agent, "id" | "name" | "xAccount" | "description" | "whyHunt" | "skill"> & {
-        agentHandle?: string;
-      })
-    | null
-  >(null);
+  // Use the existing SuccessfulAgentData type for the state
+  const [shareXAgentData, setShareXAgentData] = useState<SuccessfulAgentData | null>(null);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const pathname = usePathname();
@@ -45,17 +41,12 @@ export const AppBar: React.FC = () => {
     setNewAgentModalOpen(false);
   };
 
-  const handleNewAgentSuccess = (
-    agentData: Pick<Agent, "id" | "name" | "xAccount" | "description" | "whyHunt" | "skill"> & {
-      agentHandle?: string;
-    }
-  ) => {
+  const handleNewAgentSuccess = (agentData: SuccessfulAgentData) => {
     setShareXAgentData(agentData);
     setShareXModalOpen(true);
   };
 
   const handleCloseShareXModal = () => {
-    setShareXModalOpen(false);
     setShareXAgentData(null);
   };
 

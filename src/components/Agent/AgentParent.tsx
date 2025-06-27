@@ -2,15 +2,10 @@ import React from "react";
 import toast from "react-hot-toast";
 import useSWR, { useSWRConfig } from "swr";
 import { AgentCard } from "./AgentCard";
-import { ActionButtonsProps, EnhancedAgent, HandleAction, UserActions } from "@utils/types";
+import { ActionButtonsProps, AgentParentProps, HandleAction, UserActions } from "@utils/types";
 import { fetcher } from "@utils/helper-functions";
 import { useAccount } from "wagmi";
 import { AgentContentView } from "./AgentContentView";
-
-type AgentParentProps = {
-  agent: EnhancedAgent;
-  cardView: boolean;
-};
 
 export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView }) => {
   const { address, isConnected } = useAccount();

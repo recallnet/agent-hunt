@@ -15,7 +15,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
     "flex items-center h-full p-2 cursor-pointer hover:text-blue-600 transition-colors disabled:cursor-not-allowed disabled:opacity-50";
   const activeStyle = "text-blue-600";
   const inactiveStyle = "text-gray-800";
-  const inactiveFillColor = "#D1D5DB"; // A neutral gray color (Tailwind's gray-300)
+  const inactiveFillColor = "#D1D5DB";
 
   return (
     <div className="flex items-center justify-between w-full">
