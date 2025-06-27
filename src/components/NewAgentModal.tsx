@@ -126,7 +126,9 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
     data.append("description", formData.description);
     data.append("whyHunt", formData.whyHunt);
     data.append("skill", formData.skill);
-    data.append("avatar", avatarFile!);
+    if (avatarFile) {
+      data.append("avatar", avatarFile);
+    }
     data.append("authorAddress", address);
 
     try {
@@ -161,100 +163,109 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
 
   return (
     <ModalBase isOpen={isOpen} onClose={onClose}>
-      <div className="p-10 md:p-12">
-        <h2 className="text-2xl font-bold tracking-tighter mb-8 md:ml-[250px]">Add an Agent</h2>
-        <div className="grid grid-cols-1 md:grid-cols-[204px_1fr] md:gap-x-6">
-          <div className="md:col-start-2 md:row-start-1 mb-6 md:mb-0 relative">
-            <Label htmlFor="name" className={labelStyle}>
-              Agent Name
-            </Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="Excaliburrr"
-              className={`${inputStyle} ${getErrorStyle("name")} mt-2 h-[51px]`}
-            />
+      <div className="p-10 md:p-12 max-h-[90vh] overflow-y-auto">
+        <h2 className="text-2xl font-bold tracking-tighter mb-8 text-center md:text-left md:ml-[228px]">
+          Add an Agent
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-[204px_1fr] gap-x-6 gap-y-6">
+          {/* Column 1: Avatar and Skill */}
+          <div className="space-y-6">
+            <div>
+              <Label className={labelStyle}>Avatar</Label>
+              <Input id="avatarUpload" type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+              <Label htmlFor="avatarUpload">
+                <div
+                  className={`relative overflow-hidden mt-2 flex justify-center items-center w-full h-[201px] bg-[var(--brand-gray)] rounded-[5px] cursor-pointer ${
+                    errors.avatar ? "border-2 border-solid border-red-500" : ""
+                  }`}
+                >
+                  {avatarPreview ? (
+                    <Image src={avatarPreview} alt="Avatar Preview" fill className="object-cover" />
+                  ) : (
+                    <Image src="/avatar-icon.svg" alt="Avatar Icon" width={88} height={100} />
+                  )}
+                </div>
+              </Label>
+            </div>
+            <div>
+              <Label htmlFor="skill" className={labelStyle}>
+                Skill
+              </Label>
+              <Select value={formData.skill} onValueChange={handleSkillChange}>
+                <SelectTrigger
+                  id="skill"
+                  className={`${inputStyle} ${getErrorStyle("skill")} w-full mt-2 !h-[51px] flex items-center`}
+                >
+                  <SelectValue placeholder="Select a skill" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TRADING">Trading</SelectItem>
+                  <SelectItem value="RESEARCH">Research</SelectItem>
+                  <SelectItem value="AUTOMATION">Automation</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="md:col-start-1 md:row-start-1 mb-6">
-            <Label className={labelStyle}>Avatar</Label>
-            <Input id="avatarUpload" type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-            <Label htmlFor="avatarUpload">
-              <div
-                className={`relative overflow-hidden mt-2 flex justify-center items-center w-full h-[201px] bg-[var(--brand-gray)] rounded-[5px] cursor-pointer ${
-                  errors.avatar ? "border-2 border-solid border-red-500" : ""
-                }`}
+
+          {/* Column 2: Name, X Account, Descriptions, and Button */}
+          <div className="space-y-6 flex flex-col">
+            <div>
+              <Label htmlFor="name" className={labelStyle}>
+                Agent Name
+              </Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="Excaliburrr"
+                className={`${inputStyle} ${getErrorStyle("name")} mt-2 h-[51px]`}
+              />
+            </div>
+            <div>
+              <Label htmlFor="xAccount" className={labelStyle}>
+                X Account
+              </Label>
+              <Input
+                id="xAccount"
+                value={formData.xAccount}
+                onChange={handleInputChange}
+                placeholder="https://x.com/excaliburrr"
+                className={`${inputStyle} ${getErrorStyle("xAccount")} mt-2 h-[51px]`}
+              />
+            </div>
+            <div>
+              <Label htmlFor="description" className={labelStyle}>
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Excaliburrr is an automated cross-chain crypto trading agent..."
+                className={`${inputStyle} ${getErrorStyle("description")} mt-2 h-24`}
+              />
+            </div>
+            <div>
+              <Label htmlFor="whyHunt" className={labelStyle}>
+                Why did you hunt this agent?
+              </Label>
+              <Textarea
+                id="whyHunt"
+                value={formData.whyHunt}
+                onChange={handleInputChange}
+                placeholder="I’ve been using Excaliburrr for 6 months now..."
+                className={`${inputStyle} ${getErrorStyle("whyHunt")} mt-2 h-32`}
+              />
+            </div>
+            <div>
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="w-[184px] h-[37px] rounded-[5px] cursor-pointer bg-[var(--brand-blue)] hover:bg-[var(--brand-blue-hover)] text-white text-lg disabled:opacity-50"
               >
-                {avatarPreview ? (
-                  <Image src={avatarPreview} alt="Avatar Preview" fill className="object-cover" />
-                ) : (
-                  <Image src="/avatar-icon.svg" alt="Avatar Icon" width={88} height={100} />
-                )}
-              </div>
-            </Label>
-          </div>
-          <div className="md:col-start-1 md:row-start-2 mb-6">
-            <Label htmlFor="skill" className={labelStyle}>
-              Skill
-            </Label>
-            <Select value={formData.skill} onValueChange={handleSkillChange}>
-              <SelectTrigger
-                id="skill"
-                className={`${inputStyle} ${getErrorStyle("skill")} w-full mt-2 !h-[51px] flex items-center`}
-              >
-                <SelectValue placeholder="Select a skill" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="TRADING">Trading</SelectItem>
-                <SelectItem value="RESEARCH">Research</SelectItem>
-                <SelectItem value="AUTOMATION">Automation</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="md:col-start-2 md:row-start-2 mb-6 md:relative md:-top-[150px]">
-            <Label htmlFor="xAccount" className={labelStyle}>
-              X Account
-            </Label>
-            <Input
-              id="xAccount"
-              value={formData.xAccount}
-              onChange={handleInputChange}
-              placeholder="https://x.com/excaliburrr"
-              className={`${inputStyle} ${getErrorStyle("xAccount")} mt-2 h-[51px]`}
-            />
-          </div>
-          <div className="md:col-start-2 md:row-start-3 mb-6 md:relative md:-top-[150px]">
-            <Label htmlFor="description" className={labelStyle}>
-              Description
-            </Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="Excaliburrr is an automated cross-chain crypto trading agent..."
-              className={`${inputStyle} ${getErrorStyle("description")} mt-2 h-24`}
-            />
-          </div>
-          <div className="md:col-start-2 md:row-start-4 mb-6 md:relative md:-top-[150px]">
-            <Label htmlFor="whyHunt" className={labelStyle}>
-              Why did you hunt this agent?
-            </Label>
-            <Textarea
-              id="whyHunt"
-              value={formData.whyHunt}
-              onChange={handleInputChange}
-              placeholder="I’ve been using Excaliburrr for 6 months now..."
-              className={`${inputStyle} ${getErrorStyle("whyHunt")} mt-2 h-32`}
-            />
-          </div>
-          <div className="md:col-start-2 md:row-start-5 md:relative md:-top-[150px]">
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="w-[184px] h-[37px] rounded-[5px] cursor-pointer bg-[var(--brand-blue)] hover:bg-[var(--brand-blue-hover)] text-white text-lg disabled:opacity-50"
-            >
-              {isSubmitting ? "Submitting..." : "Submit"}
-            </Button>
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

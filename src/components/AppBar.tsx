@@ -15,7 +15,7 @@ import toast from "react-hot-toast";
 export const AppBar: React.FC = () => {
   const [isNewAgentModalOpen, setNewAgentModalOpen] = useState(false);
   const [isShareXModalOpen, setShareXModalOpen] = useState(false);
-  const [isRulesModalOpen, setRulesModalOpen] = useState(false); // State for the Rules modal
+  const [isRulesModalOpen, setRulesModalOpen] = useState(false);
   const [shareXAgentData, setShareXAgentData] = useState<
     | (Pick<Agent, "id" | "name" | "xAccount" | "description" | "whyHunt" | "skill"> & {
         agentHandle?: string;
@@ -38,7 +38,7 @@ export const AppBar: React.FC = () => {
 
   const handleRulesClick = () => {
     setRulesModalOpen(true);
-    setMobileMenuOpen(false); // Also close the mobile menu if open
+    setMobileMenuOpen(false);
   };
 
   const handleCloseNewAgentModal = () => {
@@ -74,15 +74,15 @@ export const AppBar: React.FC = () => {
   return (
     <>
       <header className="sticky top-0 z-40 w-full bg-white shadow-sm">
-        <nav className="container mx-auto flex h-[84px] items-center justify-between px-6">
+        <nav className="container mx-auto flex h-[84px] items-center justify-between px-6 relative">
           {/* Left: Logo */}
           <Link href="/top" className="flex items-center space-x-3">
             <Image src="/agent-icon.svg" alt="Agent Hunt Logo" width={28} height={32} />
-            <span className="text-2xl font-normal tracking-tighter hidden md:inline">AgentHunt</span>
+            <span className="text-2xl font-normal tracking-tighter hidden xl:inline">AgentHunt</span>
           </Link>
 
           {/* Center: Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden xl:flex absolute left-1/2 transform -translate-x-1/2 items-center space-x-8">
             <Link href="/top" className={getLinkClass("/top")}>
               TOP
             </Link>
@@ -95,11 +95,11 @@ export const AppBar: React.FC = () => {
           </div>
 
           {/* Right: Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-10">
+          <div className="hidden xl:flex items-center space-x-10">
             <Button
               variant="link"
               className={`${navTextStyle} p-0 h-auto hover:bg-transparent hover:no-underline hover:cursor-pointer`}
-              onClick={handleRulesClick} // Updated onClick handler
+              onClick={handleRulesClick}
             >
               RULES
             </Button>
@@ -107,9 +107,9 @@ export const AppBar: React.FC = () => {
           </div>
 
           {/* Mobile Menu Button & Connect Wallet */}
-          <div className="md:hidden flex items-center space-x-4">
+          <div className="xl:hidden flex items-center">
             <ConnectButton showBalance={false} chainStatus="none" label="CONNECT" accountStatus="avatar" />
-            <button onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}>
+            <button onClick={() => setMobileMenuOpen(!isMobileMenuOpen)} className="ml-4">
               <Menu className="w-8 h-8" />
             </button>
           </div>
@@ -117,7 +117,7 @@ export const AppBar: React.FC = () => {
 
         {/* Mobile Menu Dropdown */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white shadow-md absolute w-full">
+          <div className="xl:hidden bg-white shadow-md absolute w-full">
             <div className="flex flex-col items-center space-y-4 p-4">
               <Link href="/top" className={getLinkClass("/top")} onClick={() => setMobileMenuOpen(false)}>
                 TOP
