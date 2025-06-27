@@ -6,12 +6,34 @@ import Head from "next/head";
 import "@styles/globals.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const siteTitle = "Recall Agent Hunt";
+  const siteDescription = "Hunt, discover, and vote for the best AI agents on the web.";
+  const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://agenthunt.recall.network";
+  const previewImageUrl = `${siteUrl}/agent-fallback-icon.png`;
+  const twitterHandle = "@recallnet";
+
   return (
     <Providers>
       <Head>
-        <title>Recall</title>
-        <meta name="description" content="Agent Hunt for Recall" />
+        <title>{siteTitle}</title>
+        <meta name="description" content={siteDescription} />
         <link rel="icon" href="/agent-icon.svg" />
+
+        {/* --- Open Graph / Facebook Meta Tags --- */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={siteUrl} />
+        <meta property="og:title" content={siteTitle} />
+        <meta property="og:description" content={siteDescription} />
+        <meta property="og:image" content={previewImageUrl} />
+
+        {/* --- Twitter Card Meta Tags --- */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta property="twitter:domain" content="agenthunt.recall.network" />
+        <meta property="twitter:url" content={siteUrl} />
+        <meta name="twitter:title" content={siteTitle} />
+        <meta name="twitter:description" content={siteDescription} />
+        <meta name="twitter:image" content={previewImageUrl} />
+        <meta name="twitter:site" content={twitterHandle} />
       </Head>
 
       <div className="content-wrapper flex flex-col min-h-screen">
