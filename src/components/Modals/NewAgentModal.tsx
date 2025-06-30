@@ -17,10 +17,11 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
   const { mutate } = useSWRConfig();
   const [formData, setFormData] = useState<AgentFormState>({
     name: "",
-    xAccount: "",
+    url: "",
     description: "",
     whyHunt: "",
     skill: "",
+    otherSkill: "",
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -30,7 +31,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
 
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ name: "", xAccount: "", description: "", whyHunt: "", skill: "" });
+      setFormData({ name: "", url: "", description: "", whyHunt: "", skill: "", otherSkill: "" });
       setAvatarFile(null);
       setAvatarPreview(null);
       setErrors({});
@@ -50,16 +51,18 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
     switch (field) {
       case "name":
         return value.trim() ? undefined : "Agent name is required.";
-      case "xAccount":
-        if (!value.trim()) return "X Account is required.";
-        const xAccountPattern = /^(https?:\/\/)?(www\.)?x\.com\/.+$/;
-        return xAccountPattern.test(value) ? undefined : "Please enter a valid X.com URL.";
+      case "url":
+        if (!value.trim()) return "URL is required.";
+        const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+        return urlPattern.test(value) ? undefined : "Please enter a valid URL.";
       case "description":
         return value.trim() ? undefined : "Description is required.";
       case "whyHunt":
         return value.trim() ? undefined : "This field is required.";
       case "skill":
         return value ? undefined : "A skill must be selected.";
+      case "otherSkill":
+        return value.trim() ? undefined : "Please specify the skill.";
       default:
         return undefined;
     }
@@ -68,12 +71,17 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {
       name: validateField("name", formData.name),
-      xAccount: validateField("xAccount", formData.xAccount),
+      url: validateField("url", formData.url),
       description: validateField("description", formData.description),
       whyHunt: validateField("whyHunt", formData.whyHunt),
       skill: validateField("skill", formData.skill),
       avatar: avatarFile ? undefined : "An avatar image is required.",
     };
+
+    if (formData.skill === "OTHER") {
+      newErrors.otherSkill = validateField("otherSkill", formData.otherSkill);
+    }
+
     setErrors(newErrors);
     return Object.values(newErrors).every((error) => !error);
   };
@@ -103,7 +111,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
   const handleSkillChange = (value: string) => {
     setFormData((prev) => ({ ...prev, skill: value as AgentFormState["skill"] }));
     const error = validateField("skill", value);
-    setErrors((prev) => ({ ...prev, skill: error }));
+    setErrors((prev) => ({ ...prev, skill: error, otherSkill: undefined })); // Clear otherSkill error on change
   };
 
   const handleSubmit = async () => {
@@ -122,10 +130,13 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
 
     const data = new FormData();
     data.append("name", formData.name);
-    data.append("xAccount", formData.xAccount);
+    data.append("url", formData.url);
     data.append("description", formData.description);
     data.append("whyHunt", formData.whyHunt);
     data.append("skill", formData.skill);
+    if (formData.skill === "OTHER") {
+      data.append("otherSkillDetail", formData.otherSkill);
+    }
     if (avatarFile) {
       data.append("avatar", avatarFile);
     }
@@ -143,10 +154,11 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
       onSuccess({
         id: agent.id,
         name: agent.name,
-        xAccount: agent.xAccount,
+        url: agent.url,
         description: agent.description,
         whyHunt: agent.whyHunt,
         skill: agent.skill,
+        otherSkill: formData.otherSkill,
       });
       onClose();
     } catch (error) {
@@ -202,12 +214,29 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
                   <SelectItem value="TRADING">Trading</SelectItem>
                   <SelectItem value="RESEARCH">Research</SelectItem>
                   <SelectItem value="AUTOMATION">Automation</SelectItem>
+                  <SelectItem value="OTHER">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Conditionally rendered input for "Other" skill */}
+            {formData.skill === "OTHER" && (
+              <div className="space-y-2">
+                <Label htmlFor="otherSkill" className={labelStyle}>
+                  Please Specify
+                </Label>
+                <Input
+                  id="otherSkill"
+                  value={formData.otherSkill}
+                  onChange={handleInputChange}
+                  placeholder="e.g. Data Analysis"
+                  className={`${inputStyle} ${getErrorStyle("otherSkill")} h-[51px]`}
+                />
+              </div>
+            )}
           </div>
 
-          {/* Column 2: Name, X Account, Descriptions, and Button */}
+          {/* Column 2: Name, URL, Descriptions, and Button */}
           <div className="space-y-6 flex flex-col">
             <div>
               <Label htmlFor="name" className={labelStyle}>
@@ -222,15 +251,15 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
               />
             </div>
             <div>
-              <Label htmlFor="xAccount" className={labelStyle}>
-                X Account
+              <Label htmlFor="url" className={labelStyle}>
+                URL
               </Label>
               <Input
-                id="xAccount"
-                value={formData.xAccount}
+                id="url"
+                value={formData.url}
                 onChange={handleInputChange}
-                placeholder="https://x.com/excaliburrr"
-                className={`${inputStyle} ${getErrorStyle("xAccount")} mt-2 h-[51px]`}
+                placeholder="e.g. X Account, Website, GitHub"
+                className={`${inputStyle} ${getErrorStyle("url")} mt-2 h-[51px]`}
               />
             </div>
             <div>

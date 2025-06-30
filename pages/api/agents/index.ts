@@ -5,7 +5,7 @@ import prisma from "@utils/db";
 import { s3Client } from "@utils/s3Client";
 import fs from "fs";
 import formidable from "formidable";
-import { AgentFields, EnhancedAgent, ErrorResponse, PaginatedAgentsResponse } from "@utils/types";
+import { EnhancedAgent, ErrorResponse, PaginatedAgentsResponse } from "@utils/types";
 
 export const config = {
   api: {
@@ -150,15 +150,19 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse<Agent | Erro
     const form = formidable({});
     const [fields, files] = await form.parse(req);
 
-    const agentData: AgentFields = {
+    // The global AgentFormState includes `otherSkill`, which is a client-side concern.
+    // The API only needs the core fields.
+    const agentData = {
       name: fields.name?.[0] || "",
-      xAccount: fields.xAccount?.[0] || "",
+      url: fields.url?.[0] || "",
       description: fields.description?.[0] || "",
       whyHunt: fields.whyHunt?.[0] || "",
-      skill: (fields.skill?.[0] || "") as AgentFields["skill"],
+      skill: (fields.skill?.[0] || "") as Agent["skill"] | "",
       authorAddress: fields.authorAddress?.[0] || "",
     };
 
+    // Extract the new otherSkillDetail field separately
+    const otherSkillDetail = fields.otherSkillDetail?.[0];
     const avatarFile = files.avatar?.[0];
 
     if (!avatarFile || !agentData.authorAddress) {
@@ -188,11 +192,13 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse<Agent | Erro
       data: {
         name: agentData.name,
         avatarUrl: avatarUrl,
-        xAccount: agentData.xAccount,
+        url: agentData.url,
         description: agentData.description,
         whyHunt: agentData.whyHunt,
         skill: agentData.skill as Agent["skill"],
         authorId: user.id,
+        // Conditionally add the otherSkillDetail if it exists
+        ...(otherSkillDetail && { otherSkillDetail: otherSkillDetail }),
       },
     });
 

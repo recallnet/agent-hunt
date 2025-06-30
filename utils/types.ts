@@ -3,10 +3,11 @@ import { ReactNode } from "react";
 
 export type AgentFormState = {
   name: string;
-  xAccount: string;
+  url: string;
   description: string;
   whyHunt: string;
   skill: Agent["skill"] | "";
+  otherSkill: string;
 };
 
 export type AgentFields = AgentFormState & {

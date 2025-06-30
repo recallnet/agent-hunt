@@ -12,6 +12,7 @@ enum Skill {
   TRADING
   RESEARCH
   AUTOMATION
+  OTHER
 }
 
 model User {
@@ -25,19 +26,20 @@ model User {
 }
 
 model Agent {
-  id            Int            @id @default(autoincrement())
-  createdAt     DateTime       @default(now())
-  name          String
-  avatarUrl     String
-  xAccount      String
-  description   String
-  whyHunt       String
-  skill         Skill
-  author        User           @relation(fields: [authorId], references: [id])
-  authorId      Int
-  upvotes       Upvote[]
-  duplicateFlags DuplicateFlag[]
-  spamFlags     SpamFlag[]
+  id               Int            @id @default(autoincrement())
+  createdAt        DateTime       @default(now())
+  name             String
+  avatarUrl        String
+  url              String
+  description      String
+  whyHunt          String
+  skill            Skill
+  otherSkillDetail String?
+  author           User           @relation(fields: [authorId], references: [id])
+  authorId         Int
+  upvotes          Upvote[]
+  duplicateFlags   DuplicateFlag[]
+  spamFlags        SpamFlag[]
 }
 
 model Upvote {

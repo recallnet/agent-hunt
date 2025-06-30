@@ -27,7 +27,7 @@ const UpvoterItem: React.FC<UpvoterItemProps> = ({ address }) => {
 
   return (
     <div className="flex items-center gap-2" title={address}>
-      <Image src="/circle-icon.svg" alt="Upvoter icon" width={24} height={24} />
+      <Image src="/circle-icon.svg" alt="Upvoter icon" width={25} height={24} />
       <span style={{ color: "var(--brand-gray-text)" }}>{displayName}</span>
     </div>
   );
@@ -78,13 +78,13 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
           <div className="flex-grow mt-0 md:-mt-8">
             <h2 className="text-2xl font-bold text-gray-900">{agent.name}</h2>
             <a
-              href={agent.xAccount}
+              href={agent.url}
               target="_blank"
               rel="noopener noreferrer"
               className="text-base"
               style={{ color: "var(--brand-blue)" }}
             >
-              {agent.xAccount}
+              {agent.url}
             </a>
             <div className="relative h-[60px]">
               <p

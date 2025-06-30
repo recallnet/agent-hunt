@@ -3,7 +3,7 @@ import { ActionButtons } from "./ActionButtons";
 import { AgentCardProps } from "@utils/types";
 import Image from "next/image";
 import { AgentParent } from "./AgentParent";
-import { ModalBase } from "@components/ModalBase";
+import { ModalBase } from "@/components/Modals/ModalBase";
 import { formatSkill } from "@utils/helper-functions";
 
 export const AgentCard: React.FC<AgentCardProps> = ({ agent, actionProps }) => {

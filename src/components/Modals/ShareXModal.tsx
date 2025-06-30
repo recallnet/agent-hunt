@@ -20,7 +20,7 @@ export const ShareXModal: React.FC<ShareXModalProps> = ({ isOpen, onClose, agent
   // --- X Post Creation ---
   const handleCreateXPost = () => {
     // The agent handle is derived from the xAccount URL or the agent's name.
-    const agentHandle = agentData.xAccount.split("/").pop() || agentData.name;
+    const agentHandle = agentData.url.split("/").pop() || agentData.name;
     const postText = `Check out this new agent added to Recall’s agent hunt\n@${agentHandle} @recallnet`;
 
     // The specific URL to be used for the preview card.

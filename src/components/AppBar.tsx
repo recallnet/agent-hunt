@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "@/components/ui/button";
-import { NewAgentModal } from "./NewAgentModal";
-import { ShareXModal } from "./ShareXModal";
-import { RulesModal } from "./RulesModal";
+import { NewAgentModal } from "./Modals/NewAgentModal";
+import { ShareXModal } from "./Modals/ShareXModal";
+import { RulesModal } from "./Modals/RulesModal";
 import { Menu } from "lucide-react";
 import { useAccount } from "wagmi";
 import toast from "react-hot-toast";
@@ -16,7 +16,6 @@ export const AppBar: React.FC = () => {
   const [isNewAgentModalOpen, setNewAgentModalOpen] = useState(false);
   const [isShareXModalOpen, setShareXModalOpen] = useState(false);
   const [isRulesModalOpen, setRulesModalOpen] = useState(false);
-  // Use the existing SuccessfulAgentData type for the state
   const [shareXAgentData, setShareXAgentData] = useState<SuccessfulAgentData | null>(null);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -51,14 +50,13 @@ export const AppBar: React.FC = () => {
   };
 
   const navTextStyle = "font-bold text-base tracking-tighter";
-  const centerNavStyle = `text-xl ${navTextStyle} hover:bg-transparent hover:cursor-pointer`;
+  const centerNavStyle = `text-xl ${navTextStyle} hover:cursor-pointer`;
 
-  const huntButtonClass = isNewAgentModalOpen
-    ? "h-[42px] w-[135px] rounded-[5px] bg-[var(--brand-blue)] text-white border-2 border-[var(--brand-blue)] hover:bg-[var(--brand-blue)] hover:cursor-pointer"
-    : "h-[42px] w-[135px] text-brand-blue hover:cursor-pointer";
+  const huntButtonClass =
+    "h-[42px] w-[135px] rounded-[5px] bg-[var(--brand-blue)] text-white border-2 border-[var(--brand-blue)] hover:bg-[var(--brand-blue-hover)] hover:cursor-pointer";
 
   const getLinkClass = (href: string) => {
-    const baseStyle = `${centerNavStyle} p-0`;
+    const baseStyle = `${centerNavStyle} p-0 hover:bg-transparent`;
     return pathname === href ? `${baseStyle} text-[var(--brand-blue)]` : baseStyle;
   };
 
@@ -77,7 +75,7 @@ export const AppBar: React.FC = () => {
             <Link href="/top" className={getLinkClass("/top")}>
               TOP
             </Link>
-            <Button variant="ghost" className={`${centerNavStyle} ${huntButtonClass}`} onClick={handleHuntClick}>
+            <Button className={`${centerNavStyle} ${huntButtonClass}`} onClick={handleHuntClick}>
               + HUNT
             </Button>
             <Link href="/new" className={getLinkClass("/new")}>
@@ -113,7 +111,7 @@ export const AppBar: React.FC = () => {
               <Link href="/top" className={getLinkClass("/top")} onClick={() => setMobileMenuOpen(false)}>
                 TOP
               </Link>
-              <Button variant="ghost" className={`${centerNavStyle} ${huntButtonClass}`} onClick={handleHuntClick}>
+              <Button className={`${centerNavStyle} ${huntButtonClass}`} onClick={handleHuntClick}>
                 + HUNT
               </Button>
               <Link href="/new" className={getLinkClass("/new")} onClick={() => setMobileMenuOpen(false)}>
