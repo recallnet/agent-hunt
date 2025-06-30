@@ -3,6 +3,7 @@ import { Providers } from "@components/Providers";
 import { AppBar } from "@/components/AppBar";
 import { Toaster } from "react-hot-toast";
 import Head from "next/head";
+import Script from "next/script";
 import "@styles/globals.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -35,6 +36,20 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="twitter:image" content={previewImageUrl} />
         <meta name="twitter:site" content={twitterHandle} />
       </Head>
+
+      {/* --- Google Tag Manager Scripts --- */}
+      {/* The 'afterInteractive' strategy loads the script after the page becomes interactive,
+        which is recommended for analytics scripts to not block page rendering.
+      */}
+      <Script strategy="afterInteractive" src="https://www.googletagmanager.com/gtag/js?id=G-4GFTKYQ794" />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-4GFTKYQ794');
+        `}
+      </Script>
 
       <div className="content-wrapper flex flex-col min-h-screen">
         <AppBar />
