@@ -29,7 +29,6 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [fallbackAvatar, setFallbackAvatar] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3 MB
@@ -40,13 +39,8 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
       setFormData({ name: "", url: "", description: "", whyHunt: "", skill: "", otherSkill: "" });
       setAvatarFile(null);
       setAvatarPreview(null);
-      setFallbackAvatar(null);
       setErrors({});
       setIsSubmitting(false);
-    } else {
-      // Pre-select a random avatar when modal opens
-      const randomIndex = Math.floor(Math.random() * sampleAvatars.length);
-      setFallbackAvatar(sampleAvatars[randomIndex]);
     }
   }, [isOpen]);
 
@@ -79,7 +73,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
     }
   };
 
-  const validateForm = (): boolean => {
+  const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {
       name: validateField("name", formData.name),
       url: validateField("url", formData.url),
@@ -91,9 +85,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
     if (formData.skill === "OTHER") {
       newErrors.otherSkill = validateField("otherSkill", formData.otherSkill);
     }
-
-    setErrors(newErrors);
-    return Object.values(newErrors).every((error) => !error);
+    return newErrors;
   };
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -130,8 +122,14 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
       return;
     }
 
-    if (!validateForm()) {
-      toast.error("Please fill out all required fields correctly.");
+    const formErrors = validateForm();
+    setErrors(formErrors); // Update state to show red borders on all invalid fields
+
+    // Find the first error message in the object
+    const firstError = Object.values(formErrors).find((error) => error !== undefined);
+
+    if (firstError) {
+      toast.error(firstError); // Display the specific error
       return;
     }
 
@@ -147,10 +145,14 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
     if (formData.skill === "OTHER") {
       data.append("otherSkillDetail", formData.otherSkill);
     }
+
+    // If user uploaded a file, add it. Otherwise, assign a random avatar.
     if (avatarFile) {
       data.append("avatar", avatarFile);
-    } else if (fallbackAvatar) {
-      data.append("fallbackAvatarPath", fallbackAvatar);
+    } else {
+      const randomIndex = Math.floor(Math.random() * sampleAvatars.length);
+      const randomAvatarPath = sampleAvatars[randomIndex];
+      data.append("fallbackAvatarPath", randomAvatarPath);
     }
     data.append("authorAddress", address);
 
@@ -188,7 +190,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
 
   return (
     <ModalBase isOpen={isOpen} onClose={onClose}>
-      <div className="p-10 md:p-12 max-h-[90vh] overflow-y-auto">
+      <div className="w-full md:w-[778px] p-10 md:p-12 max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold tracking-tighter mb-8 text-center md:text-left md:ml-[228px]">
           Add an Agent
         </h2>
@@ -205,9 +207,15 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
                 >
                   {avatarPreview ? (
                     <Image src={avatarPreview} alt="Avatar Preview" fill sizes="204px" className="object-cover" />
-                  ) : fallbackAvatar ? (
-                    <Image src={fallbackAvatar} alt="Sample Avatar" fill sizes="204px" className="object-contain" />
-                  ) : null}
+                  ) : (
+                    <Image
+                      src="/avatar-icon.svg"
+                      alt="Default Avatar Icon"
+                      width={80}
+                      height={80}
+                      className="object-contain"
+                    />
+                  )}
                 </div>
               </Label>
               <div className="text-sm text-gray-500 mt-2 text-center">
@@ -227,7 +235,6 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
                   <SelectValue placeholder="Select a skill" />
                 </SelectTrigger>
                 <SelectContent>
-                  {/* Map over the skills array to generate dropdown items */}
                   {skills.map((skill) => (
                     <SelectItem key={skill.value} value={skill.value}>
                       {skill.label}
@@ -237,7 +244,6 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
               </Select>
             </div>
 
-            {/* Conditionally rendered input for "Other" skill */}
             {formData.skill === "OTHER" && (
               <div className="space-y-2">
                 <Label htmlFor="otherSkill" className={labelStyle}>

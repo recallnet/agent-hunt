@@ -44,7 +44,7 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
   const skillLabel = skills.find((s) => s.value === agent.skill)?.label || formatSkill(agent.skill);
 
   return (
-    <div className="bg-white rounded-lg w-full max-w-[800px] mx-auto">
+    <div className="bg-white rounded-lg w-full min-[778px]:w-[778px] mx-auto">
       {/* Banner */}
       <div
         className="h-[161px] w-full rounded-t-lg"
@@ -57,14 +57,9 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
           {/* Left Column: Avatar & Skill */}
           <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center gap-4">
             {/* --- AVATAR SECTION (MODIFIED) --- */}
-            <div
-              className="-mt-[160px] w-[204px] h-[204px] relative shadow-lg"
-            >
+            <div className="-mt-[160px] w-[204px] h-[204px] relative shadow-lg">
               {/* This div acts as the rectangular background */}
-              <div
-                className="absolute inset-0"
-                style={{ background: "var(--avatar-fallback-background, #F3F4F6)" }}
-              />
+              <div className="absolute inset-0" style={{ background: "var(--avatar-fallback-background, #F3F4F6)" }} />
 
               {/* The Image is placed on top of the background div */}
               <Image
@@ -74,7 +69,7 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
                 sizes="204px"
                 className="object-cover"
                 style={{
-                  clipPath: 'inset(0)' // Ensures the image is clipped to a rectangle
+                  clipPath: "inset(0)", // Ensures the image is clipped to a rectangle
                 }}
                 priority
               />

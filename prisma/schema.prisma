@@ -54,7 +54,7 @@ model Agent {
 model Upvote {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
-  reason    String?
+  reason    String
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
   agentId   Int

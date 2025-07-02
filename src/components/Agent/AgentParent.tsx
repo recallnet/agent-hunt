@@ -16,6 +16,8 @@ export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView, mutat
   }, []);
 
   const upvoteCount = agent.upvoters.length;
+  const duplicateFlagCount = agent.duplicateFlags.length;
+  const spamFlagCount = agent.spamFlags.length;
 
   // The user's action status now comes directly from the agent prop.
   const isUpvoted = agent.isUpvoted ?? false;
@@ -68,10 +70,14 @@ export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView, mutat
     isUpvoted,
     upvoteCount,
     isDuplicateFlagged,
+    duplicateFlagCount,
     isSpamFlagged,
+    spamFlagCount,
     // The main loading state is now just `isSubmitting` as the initial load is handled by the parent.
     isLoading: !isMounted || isSubmitting,
     handleAction,
+    isConnected,
+    address,
   };
 
   if (cardView) {

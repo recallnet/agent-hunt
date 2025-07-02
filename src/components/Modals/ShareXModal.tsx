@@ -20,22 +20,35 @@ export const ShareXModal: React.FC<ShareXModalProps> = ({ isOpen, onClose, agent
 
   // --- X Post Creation ---
   const handleCreateXPost = () => {
-    // Updated post text as per your request.
-    const postText = "I just hunted a new agent on AgentHunt, powered by @recallnet.";
+    // Start with the base text for the post.
+    let postText = `I just hunted "${agentData.name}" on AgentHunt, powered by @recallnet`;
+
+    // --- New Logic: Check for a Twitter/X URL to extract the username ---
+    try {
+      const twitterRegex = /(?:https?:\/\/)?(?:www\.)?(?:twitter|x)\.com\/([a-zA-Z0-9_]{1,15})/;
+      const match = agentData.url.match(twitterRegex);
+
+      // If a username is found in the agent's URL, tag them.
+      if (match && match[1]) {
+        postText += ` @${match[1]}`;
+      }
+    } catch (e) {
+      // Silently ignore any regex errors and proceed without the extra tag.
+      console.error("Could not parse agent URL for X handle:", e);
+    }
+    // End new logic
 
     // The specific URL of the agent's profile to be shared.
     const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://agenthunt.recall.network";
     const shareUrl = `${siteUrl}/agents/${agentData.id}`;
 
-    // Combine the text and URL with two newlines. This creates a line break in the
-    // resulting tweet, which helps X's crawler correctly identify the URL for a preview card.
-    const fullText = `${postText}\n\n${shareUrl}`;
+    // Combine the text and URL with two newlines for better preview card rendering on X.
+    const fullText = `${postText}.\n\n${shareUrl}`;
 
     // Encode the entire string for the URL parameter.
     const encodedFullText = encodeURIComponent(fullText);
 
-    // Construct the final X intent URL. By placing the URL in the 'text' parameter,
-    // we ensure it's part of the tweet content.
+    // Construct the final X intent URL.
     const xPostUrl = `https://x.com/intent/tweet?text=${encodedFullText}`;
 
     window.open(xPostUrl, "_blank");

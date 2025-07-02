@@ -78,9 +78,13 @@ export type ActionButtonsProps = {
   isUpvoted: boolean;
   upvoteCount: number;
   isDuplicateFlagged: boolean;
+  duplicateFlagCount: number;
   isSpamFlagged: boolean;
+  spamFlagCount: number;
   isLoading: boolean;
   handleAction: HandleAction;
+  isConnected: boolean;
+  address: string | undefined;
 };
 
 export type HandleAction = (

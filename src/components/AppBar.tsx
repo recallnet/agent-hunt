@@ -20,15 +20,35 @@ export const AppBar: React.FC = () => {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const pathname = usePathname();
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
 
-  const handleHuntClick = () => {
-    if (isConnected) {
-      setNewAgentModalOpen(true);
-    } else {
+  const handleHuntClick = async () => {
+    setMobileMenuOpen(false); // Close mobile menu regardless
+    if (!isConnected || !address) {
       toast.error("Please connect your wallet to hunt an agent.");
+      return;
     }
-    setMobileMenuOpen(false);
+
+    // Check agent creation limit before opening the modal
+    try {
+      const response = await fetch(`/api/users/${address}/activity-check`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Could not check activity limit.");
+      }
+
+      if (data.agentCount >= 5) {
+        toast.error("You have reached the limit of 5 agents per 24 hours.");
+        return;
+      }
+
+      // If limit is not reached, open the modal
+      setNewAgentModalOpen(true);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
+      toast.error(errorMessage);
+    }
   };
 
   const handleRulesClick = () => {
@@ -41,12 +61,14 @@ export const AppBar: React.FC = () => {
   };
 
   const handleNewAgentSuccess = (agentData: SuccessfulAgentData) => {
+    setNewAgentModalOpen(false);
     setShareXAgentData(agentData);
     setShareXModalOpen(true);
   };
 
   const handleCloseShareXModal = () => {
     setShareXAgentData(null);
+    setShareXModalOpen(false);
   };
 
   const navTextStyle = "font-bold text-base tracking-tighter";
@@ -59,11 +81,11 @@ export const AppBar: React.FC = () => {
     "h-[42px] w-[135px] rounded-[5px] bg-[var(--brand-blue)] text-white border-2 border-[var(--brand-blue)] hover:bg-transparent hover:text-[var(--brand-blue)] hover:cursor-pointer";
 
   const getLinkClass = (href: string) => {
-    const baseStyle = `${centerNavStyle} p-0 hover:bg-transparent`;
+    const baseStyle = `${centerNavStyle} p-0 hover:bg-transparent hover:text-[var(--brand-blue)]`;
     return pathname === href ? `${baseStyle} text-[var(--brand-blue)]` : baseStyle;
   };
 
-  const rulesLinkClass = `${centerNavStyle} p-0 hover:bg-transparent text-black`;
+  const rulesLinkClass = `${centerNavStyle} p-0 hover:bg-transparent hover:text-[var(--brand-blue)] text-black`;
 
   return (
     <>

@@ -95,6 +95,10 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
           await prisma.upvote.delete({ where });
           return res.status(200).json({ message: "Upvote removed." });
         } else {
+          // The `reason` is now required for upvoting
+          if (!reason) {
+            return res.status(400).json({ error: "A reason is required to upvote." });
+          }
           const newAction = await prisma.upvote.create({
             data: { userId: user.id, agentId, reason },
           });

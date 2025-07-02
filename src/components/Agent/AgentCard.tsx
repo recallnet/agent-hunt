@@ -17,7 +17,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent, actionProps, mutate
         className="relative h-[399px] w-full overflow-hidden group transition-all duration-300 hover:shadow-glow cursor-pointer"
         onClick={() => setModalOpen(true)}
       >
-        <div className="relative w-full h-full">
+        <div className="relative w-full h-full bg-gray-200"> {/* Added grey background */}
           <Image
             src={agent.avatarUrl}
             alt={`${agent.name}'s avatar`}
