@@ -28,13 +28,13 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent, actionProps, mutate
           />
         </div>
         {/* White box underneath */}
-        <div className="absolute bottom-0 left-0 right-0 h-[124px] bg-white/90 p-4 rounded-t-2xl">
+        <div className="absolute bottom-0 left-0 right-0 h-[124px] bg-white/90 p-4 ">
           <div className="flex h-full flex-col justify-between gap-1">
             <div>
-              <span className="text-base font-small">{skillLabel}</span>
+              <span className="text-base font-small font-bold text-gray-500">{skillLabel}</span>
             </div>
             <div className="-mt-4">
-              <h3 className="text-2xl font-bold text-gray-900 truncate">{agent.name}</h3>
+              <h3 className="text-2xl text-gray-900 truncate">{agent.name}</h3>
             </div>
             <ActionButtons {...actionProps} />
           </div>
