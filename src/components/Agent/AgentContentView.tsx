@@ -4,9 +4,9 @@ import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { ActionButtons } from "./ActionButtons";
 import { formatSkill } from "@utils/helper-functions";
-import { AgentCardProps, skills } from "@utils/types"; // Import skills array
+import { AgentCardProps, skills } from "@utils/types";
 
-const MAX_DISPLAY_COUNT = 16; // 4 columns * 4 rows
+const MAX_DISPLAY_COUNT = 16;
 
 type UpvoterItemProps = {
   address: `0x${string}`;
@@ -27,6 +27,7 @@ const UpvoterItem: React.FC<UpvoterItemProps> = ({ address }) => {
 
   return (
     <div className="flex items-center gap-2" title={address}>
+      {/* This can be updated to a user-specific avatar in the future if desired */}
       <Image src="/circle-icon.svg" alt="Upvoter icon" width={25} height={24} />
       <span style={{ color: "var(--brand-gray-text)" }}>{displayName}</span>
     </div>
@@ -40,11 +41,10 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
     year: "numeric",
   });
 
-  // Find the corresponding label for the agent's skill value.
   const skillLabel = skills.find((s) => s.value === agent.skill)?.label || formatSkill(agent.skill);
 
   return (
-    <div className="bg-white rounded-lg w-full">
+    <div className="bg-white rounded-lg w-full max-w-[800px] mx-auto">
       {/* Banner */}
       <div
         className="h-[161px] w-full rounded-t-lg"
@@ -56,27 +56,37 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
         <div className="flex flex-col md:flex-row gap-8 md:gap-10">
           {/* Left Column: Avatar & Skill */}
           <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center gap-4">
-            {/* Avatar Image: Overlays the banner */}
+            {/* --- AVATAR SECTION (MODIFIED) --- */}
             <div
-              className="-mt-[160px] w-[204px] h-[204px] relative rounded-lg overflow-hidden shadow-lg p-2"
-              style={{ background: "var(--avatar-fallback-background)" }}
+              className="-mt-[160px] w-[204px] h-[204px] relative shadow-lg"
             >
+              {/* This div acts as the rectangular background */}
+              <div
+                className="absolute inset-0"
+                style={{ background: "var(--avatar-fallback-background, #F3F4F6)" }}
+              />
+
+              {/* The Image is placed on top of the background div */}
               <Image
                 src={agent.avatarUrl}
                 alt={`${agent.name}'s avatar`}
                 fill
                 sizes="204px"
-                className="object-contain" /* Use contain to show background */
+                className="object-cover"
+                style={{
+                  clipPath: 'inset(0)' // Ensures the image is clipped to a rectangle
+                }}
                 priority
               />
             </div>
+            {/* --- END OF AVATAR SECTION --- */}
 
             {/* Agent Skill Box */}
             <div
               className="w-[204px] h-[51px] rounded-[5px] flex items-center justify-center p-2 mt-[20px]"
               style={{ backgroundColor: "var(--brand-gray, #F3F4F6)" }}
             >
-              <span className="font-bold text-base text-center ">{skillLabel}</span>
+              <span className="font-bold text-base text-center">{skillLabel}</span>
             </div>
           </div>
 
