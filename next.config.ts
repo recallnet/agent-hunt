@@ -13,6 +13,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/avatars/**", // Allows any image in the 'avatars' folder and its subdirectories
       },
+      {
+        protocol: "http", // Add localhost for development
+        hostname: "localhost",
+        port: "3000", // Specify the port used in development
+        pathname: "/**", // Allow all paths under localhost
+      },
     ],
   },
 
