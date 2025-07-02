@@ -62,7 +62,15 @@ async function handleGet(
   req: NextApiRequest,
   res: NextApiResponse<EnhancedAgent | PaginatedAgentsResponse | ErrorResponse>
 ) {
-  const { id, sortBy, page = "1" } = req.query;
+  const { id, sortBy, page = "1", address } = req.query;
+
+  let userId: number | undefined;
+  if (address && typeof address === "string") {
+    const user = await prisma.user.findUnique({ where: { address }, select: { id: true } });
+    if (user) {
+      userId = user.id;
+    }
+  }
 
   // This clause defines the related data we want to fetch with every agent.
   const includeClause = {
@@ -132,7 +140,33 @@ async function handleGet(
     const hasMore = agents.length > AGENTS_PER_PAGE;
     const agentsForPage = agents.slice(0, AGENTS_PER_PAGE);
 
-    const enhancedAgents = agentsForPage.map((agent) => transformToEnhancedAgent(agent as AgentWithRelations));
+    // If a user is logged in, fetch all their actions for the agents on this page in a batch.
+    let userUpvotedIds = new Set<number>();
+    let userDuplicateFlaggedIds = new Set<number>();
+    let userSpamFlaggedIds = new Set<number>();
+
+    if (userId && agentsForPage.length > 0) {
+      const agentIds = agentsForPage.map((a) => a.id);
+      const [upvotes, duplicateFlags, spamFlags] = await Promise.all([
+        prisma.upvote.findMany({ where: { userId, agentId: { in: agentIds } }, select: { agentId: true } }),
+        prisma.duplicateFlag.findMany({ where: { userId, agentId: { in: agentIds } }, select: { agentId: true } }),
+        prisma.spamFlag.findMany({ where: { userId, agentId: { in: agentIds } }, select: { agentId: true } }),
+      ]);
+      userUpvotedIds = new Set(upvotes.map((v) => v.agentId));
+      userDuplicateFlaggedIds = new Set(duplicateFlags.map((f) => f.agentId));
+      userSpamFlaggedIds = new Set(spamFlags.map((f) => f.agentId));
+    }
+
+    // Now, enhance each agent with the user's action status.
+    const enhancedAgents = agentsForPage.map((agent) => {
+      const transformedAgent = transformToEnhancedAgent(agent as AgentWithRelations);
+      return {
+        ...transformedAgent,
+        isUpvoted: userUpvotedIds.has(agent.id),
+        isDuplicateFlagged: userDuplicateFlaggedIds.has(agent.id),
+        isSpamFlagged: userSpamFlaggedIds.has(agent.id),
+      };
+    });
 
     return res.status(200).json({ agents: enhancedAgents, hasMore });
   } catch (error) {
@@ -164,7 +198,6 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse<Agent | Erro
     // Extract the new otherSkillDetail field separately
     const otherSkillDetail = fields.otherSkillDetail?.[0];
 
-    // --- Start of Changes ---
     const avatarFile = files.avatar?.[0];
     const fallbackAvatarPath = fields.fallbackAvatarPath?.[0];
 

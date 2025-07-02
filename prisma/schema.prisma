@@ -61,7 +61,8 @@ model Upvote {
   agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, agentId])
-  @@index([agentId]) // Index to speed up relation queries
+  @@index([userId, agentId]) // Optimizes queries for a specific user's actions
+  @@index([agentId])         // Optimizes queries for all actions on an agent
 }
 
 model DuplicateFlag {
@@ -74,7 +75,8 @@ model DuplicateFlag {
   agent             Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, agentId])
-  @@index([agentId]) // Index to speed up relation queries
+  @@index([userId, agentId]) // Optimizes queries for a specific user's actions
+  @@index([agentId])         // Optimizes queries for all actions on an agent
 }
 
 model SpamFlag {
@@ -87,5 +89,6 @@ model SpamFlag {
   agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, agentId])
-  @@index([agentId]) // Index to speed up relation queries
+  @@index([userId, agentId]) // Optimizes queries for a specific user's actions
+  @@index([agentId])         // Optimizes queries for all actions on an agent
 }

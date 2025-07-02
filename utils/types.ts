@@ -63,6 +63,9 @@ export type EnhancedAgent = Agent & {
   authorAddress: string;
   duplicateFlags: DuplicateFlag[];
   spamFlags: SpamFlag[];
+  isUpvoted?: boolean;
+  isDuplicateFlagged?: boolean;
+  isSpamFlagged?: boolean;
 };
 
 export type UserActions = {

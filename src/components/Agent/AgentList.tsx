@@ -4,26 +4,34 @@ import { fetcher } from "@utils/helper-functions";
 import { AgentParent } from "@/components/Agent/AgentParent";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
+import { useAccount } from "wagmi";
 
 interface AgentListProps {
   sortBy: "top" | "new";
 }
 
-const getKey = (pageIndex: number, previousPageData: PaginatedAgentsResponse | null, sortBy: string) => {
+const getKey = (
+  pageIndex: number,
+  previousPageData: PaginatedAgentsResponse | null,
+  sortBy: string,
+  address?: string
+) => {
   // If the previous page indicated there are no more results, we return null to stop fetching.
   if (previousPageData && !previousPageData.hasMore) return null;
 
-  // For the first page, we request page=1.
-  if (pageIndex === 0) return `/api/agents?sortBy=${sortBy}&page=1`;
+  const page = pageIndex + 1;
+  const baseUrl = `/api/agents?sortBy=${sortBy}&page=${page}`;
 
-  // For subsequent pages, we increment the page number.
-  return `/api/agents?sortBy=${sortBy}&page=${pageIndex + 1}`;
+  // Append the user's address to the URL if they are connected
+  return address ? `${baseUrl}&address=${address}` : baseUrl;
 };
 
 export const AgentList: React.FC<AgentListProps> = ({ sortBy }) => {
+  const { address } = useAccount(); // Get the connected wallet address
+
   // `useSWRInfinite` fetches data from the paginated API.
   const { data, error, isLoading, size, setSize, isValidating, mutate } = useSWRInfinite<PaginatedAgentsResponse>(
-    (index, prevData) => getKey(index, prevData, sortBy),
+    (index, prevData) => getKey(index, prevData, sortBy, address), // Pass address to the key function
     fetcher
   );
 

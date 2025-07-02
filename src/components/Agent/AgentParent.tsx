@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import useSWR, { useSWRConfig } from "swr";
 import { AgentCard } from "./AgentCard";
-import { ActionButtonsProps, AgentParentProps, HandleAction, UserActions } from "@utils/types";
-import { fetcher } from "@utils/helper-functions";
+import { ActionButtonsProps, AgentParentProps, HandleAction } from "@utils/types";
 import { useAccount } from "wagmi";
 import { AgentContentView } from "./AgentContentView";
 
 export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView, mutateList }) => {
   const { address, isConnected } = useAccount();
-  const { mutate } = useSWRConfig();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -19,12 +16,11 @@ export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView, mutat
   }, []);
 
   const upvoteCount = agent.upvoters.length;
-  const apiUrl = isConnected ? `/api/agents/${agent.id}/actions?address=${address}` : null;
-  const { data: userActions, isLoading: isLoadingUserActions } = useSWR<UserActions>(apiUrl, fetcher);
 
-  const isUpvoted = userActions?.upvoted ?? false;
-  const isDuplicateFlagged = userActions?.duplicateFlagged ?? false;
-  const isSpamFlagged = userActions?.spamFlagged ?? false;
+  // The user's action status now comes directly from the agent prop.
+  const isUpvoted = agent.isUpvoted ?? false;
+  const isDuplicateFlagged = agent.isDuplicateFlagged ?? false;
+  const isSpamFlagged = agent.isSpamFlagged ?? false;
 
   const handleAction: HandleAction = async (e, action, reason) => {
     e?.stopPropagation();
@@ -46,23 +42,23 @@ export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView, mutat
     const currentStates = { upvote: isUpvoted, duplicate: isDuplicateFlagged, spam: isSpamFlagged };
     const successMessage = actionMessages[action][!currentStates[action] ? "active" : "inactive"];
 
+    // With the new efficient data fetching, client-side optimistic updates are no longer needed
+    // as the revalidation is now very fast.
+
     try {
-      const response = await fetch(`/api/agents/${agent.id}/actions`, {
+      await fetch(`/api/agents/${agent.id}/actions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, address, reason }),
       });
-      if (!response.ok) {
-        throw new Error((await response.json()).error || "The action failed.");
-      }
       toast.success(successMessage);
-      // Revalidate data after successful action and wait for it to complete
-      await Promise.all([mutateList?.(), mutate(apiUrl)]);
+      // Revalidate the entire list data after a successful action.
+      await mutateList?.();
     } catch (error) {
-      // Revert optimistic UI update on failure by re-fetching from the server
       const errorMessage = error instanceof Error ? error.message : "An error occurred.";
       toast.error(errorMessage);
-      await Promise.all([mutateList?.(), mutate(apiUrl)]);
+      // On failure, still revalidate to sync with the server's true state.
+      await mutateList?.();
     } finally {
       setIsSubmitting(false); // Re-enable buttons after all actions and revalidations are done
     }
@@ -73,8 +69,8 @@ export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView, mutat
     upvoteCount,
     isDuplicateFlagged,
     isSpamFlagged,
-    // Buttons are loading if the component hasn't mounted, if SWR is fetching, or if an action is submitting
-    isLoading: !isMounted || isLoadingUserActions || isSubmitting,
+    // The main loading state is now just `isSubmitting` as the initial load is handled by the parent.
+    isLoading: !isMounted || isSubmitting,
     handleAction,
   };
 
