@@ -93,7 +93,7 @@ export const AppBar: React.FC = () => {
               + HUNT
             </Button>
             <ConnectButton.Custom>
-              {({ openConnectModal, openAccountModal, account, chain, mounted }) => {
+              {({ openConnectModal, openAccountModal, account, mounted }) => {
                 if (!mounted) return null;
                 return (
                   <Button
@@ -110,7 +110,7 @@ export const AppBar: React.FC = () => {
           {/* Mobile Menu Button & Connect Wallet */}
           <div className="xl:hidden flex items-center">
             <ConnectButton.Custom>
-              {({ openConnectModal, openAccountModal, account, chain, mounted }) => {
+              {({ openConnectModal, openAccountModal, account, mounted }) => {
                 if (!mounted) return null;
                 return (
                   <Button
