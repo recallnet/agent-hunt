@@ -7,7 +7,7 @@ import Script from "next/script";
 import "@styles/globals.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const siteTitle = "Recall Agent Hunt";
+  const siteTitle = "Recall | AgentHunt";
   const siteDescription = "Hunt, discover, and vote for the best AI agents on the web.";
   const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://agenthunt.recall.network";
   const previewImageUrl = `${siteUrl}/agent-fallback-icon.png`;

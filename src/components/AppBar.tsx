@@ -92,7 +92,8 @@ export const AppBar: React.FC = () => {
             >
               RULES
             </Button>
-            <ConnectButton />
+            {/* Add chainStatus="none" to hide the network selector */}
+            <ConnectButton chainStatus="none" />
           </div>
 
           {/* Mobile Menu Button & Connect Wallet */}

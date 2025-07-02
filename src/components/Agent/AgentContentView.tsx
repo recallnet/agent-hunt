@@ -4,7 +4,7 @@ import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { ActionButtons } from "./ActionButtons";
 import { formatSkill } from "@utils/helper-functions";
-import { AgentCardProps } from "@utils/types";
+import { AgentCardProps, skills } from "@utils/types"; // Import skills array
 
 const MAX_DISPLAY_COUNT = 16; // 4 columns * 4 rows
 
@@ -40,6 +40,9 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
     year: "numeric",
   });
 
+  // Find the corresponding label for the agent's skill value.
+  const skillLabel = skills.find((s) => s.value === agent.skill)?.label || formatSkill(agent.skill);
+
   return (
     <div className="bg-white rounded-lg w-full">
       {/* Banner */}
@@ -54,13 +57,16 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
           {/* Left Column: Avatar & Skill */}
           <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center gap-4">
             {/* Avatar Image: Overlays the banner */}
-            <div className="-mt-[160px] w-[204px] h-[204px] relative rounded-lg overflow-hidden shadow-lg">
+            <div
+              className="-mt-[160px] w-[204px] h-[204px] relative rounded-lg overflow-hidden shadow-lg p-2"
+              style={{ background: "var(--avatar-fallback-background)" }}
+            >
               <Image
                 src={agent.avatarUrl}
                 alt={`${agent.name}'s avatar`}
                 fill
                 sizes="204px"
-                className="object-cover"
+                className="object-contain" /* Use contain to show background */
                 priority
               />
             </div>
@@ -70,7 +76,7 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
               className="w-[204px] h-[51px] rounded-[5px] flex items-center justify-center p-2 mt-[20px]"
               style={{ backgroundColor: "var(--brand-gray, #F3F4F6)" }}
             >
-              <span className="font-bold text-base text-center ">{formatSkill(agent.skill)}</span>
+              <span className="font-bold text-base text-center ">{skillLabel}</span>
             </div>
           </div>
 

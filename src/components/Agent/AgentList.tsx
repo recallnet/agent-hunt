@@ -22,7 +22,7 @@ const getKey = (pageIndex: number, previousPageData: PaginatedAgentsResponse | n
 
 export const AgentList: React.FC<AgentListProps> = ({ sortBy }) => {
   // `useSWRInfinite` fetches data from the paginated API.
-  const { data, error, isLoading, size, setSize, isValidating } = useSWRInfinite<PaginatedAgentsResponse>(
+  const { data, error, isLoading, size, setSize, isValidating, mutate } = useSWRInfinite<PaginatedAgentsResponse>(
     (index, prevData) => getKey(index, prevData, sortBy),
     fetcher
   );
@@ -46,9 +46,9 @@ export const AgentList: React.FC<AgentListProps> = ({ sortBy }) => {
 
   return (
     <div className="w-full max-w-screen-xxl mx-auto">
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(346px,1fr))] gap-0 justify-center">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-0 justify-center">
         {agents.map((agent) => (
-          <AgentParent key={agent.id} agent={agent} cardView={true} />
+          <AgentParent key={agent.id} agent={agent} cardView={true} mutateList={mutate} />
         ))}
       </div>
 

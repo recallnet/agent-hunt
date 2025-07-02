@@ -25,19 +25,22 @@ export const ModalBase: React.FC<ModalBaseProps> = ({ isOpen, onClose, children 
 
   return (
     // The overlay to capture clicks for closing the modal
-    <div className="fixed inset-0 z-50 flex justify-center items-center backdrop-brightness-50" onClick={onClose}>
-      <div
-        className="bg-white rounded-lg shadow-xl relative w-full max-w-[778px] h-full md:h-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 flex justify-center items-center backdrop-brightness-50 p-4" onClick={onClose}>
+      {/* This relative container holds both the modal and the button,
+          allowing the button to be positioned correctly relative to the modal. */}
+      <div className="relative" onClick={(e) => e.stopPropagation()}>
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-[778px] h-full md:h-auto">
+          {/* Modal content is rendered here */}
+          {children}
+        </div>
+
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-800 z-10 cursor-pointer"
           aria-label="Close modal"
+          className="absolute top-2 right-6 text-4xl font-sans font-light text-gray-500 hover:text-gray-800 transition-colors cursor-pointer"
         >
           ×
         </button>
-        {children}
       </div>
     </div>
   );

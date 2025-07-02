@@ -9,8 +9,12 @@ import { useAccount } from "wagmi";
 import toast from "react-hot-toast";
 import { useSWRConfig } from "swr";
 import type { Agent } from "@prisma/client";
-import { FormErrors, AgentFormState, NewAgentModalProps } from "@utils/types";
+import { FormErrors, AgentFormState, NewAgentModalProps, skills } from "@utils/types";
 import { ModalBase } from "./ModalBase";
+import { primaryButtonClasses } from "@components/ui/styles";
+
+// A list of available sample avatars from your /public directory
+const sampleAvatars = ["/avatar-samples/avatar1.png", "/avatar-samples/avatar2.png", "/avatar-samples/avatar3.png"];
 
 export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const { address, isConnected } = useAccount();
@@ -25,17 +29,24 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [fallbackAvatar, setFallbackAvatar] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3 MB
 
   useEffect(() => {
     if (!isOpen) {
+      // Reset all state when modal closes
       setFormData({ name: "", url: "", description: "", whyHunt: "", skill: "", otherSkill: "" });
       setAvatarFile(null);
       setAvatarPreview(null);
+      setFallbackAvatar(null);
       setErrors({});
       setIsSubmitting(false);
+    } else {
+      // Pre-select a random avatar when modal opens
+      const randomIndex = Math.floor(Math.random() * sampleAvatars.length);
+      setFallbackAvatar(sampleAvatars[randomIndex]);
     }
   }, [isOpen]);
 
@@ -75,7 +86,6 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
       description: validateField("description", formData.description),
       whyHunt: validateField("whyHunt", formData.whyHunt),
       skill: validateField("skill", formData.skill),
-      avatar: avatarFile ? undefined : "An avatar image is required.",
     };
 
     if (formData.skill === "OTHER") {
@@ -139,6 +149,8 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
     }
     if (avatarFile) {
       data.append("avatar", avatarFile);
+    } else if (fallbackAvatar) {
+      data.append("fallbackAvatarPath", fallbackAvatar);
     }
     data.append("authorAddress", address);
 
@@ -170,6 +182,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
   };
 
   const labelStyle = "text-base font-bold";
+  const requiredIndicator = <span className="text-red-500 ml-1">*</span>;
   const getErrorStyle = (field: keyof FormErrors) => (errors[field] ? "border-red-500" : "border-[var(--brand-gray)]");
   const inputStyle = `bg-[var(--brand-gray)] focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0`;
 
@@ -187,21 +200,24 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
               <Input id="avatarUpload" type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
               <Label htmlFor="avatarUpload">
                 <div
-                  className={`relative overflow-hidden mt-2 flex justify-center items-center w-full h-[201px] bg-[var(--brand-gray)] rounded-[5px] cursor-pointer ${
-                    errors.avatar ? "border-2 border-solid border-red-500" : ""
-                  }`}
+                  className={`relative overflow-hidden mt-2 flex justify-center items-center w-full h-[201px] rounded-[5px] cursor-pointer p-4`}
+                  style={!avatarPreview ? { background: "#B5B5B5E5" } : {}}
                 >
                   {avatarPreview ? (
-                    <Image src={avatarPreview} alt="Avatar Preview" fill className="object-cover" />
-                  ) : (
-                    <Image src="/avatar-icon.svg" alt="Avatar Icon" width={88} height={100} />
-                  )}
+                    <Image src={avatarPreview} alt="Avatar Preview" fill sizes="204px" className="object-cover" />
+                  ) : fallbackAvatar ? (
+                    <Image src={fallbackAvatar} alt="Sample Avatar" fill sizes="204px" className="object-contain" />
+                  ) : null}
                 </div>
               </Label>
+              <div className="text-sm text-gray-500 mt-2 text-center">
+                <p>Max size 3mb</p>
+                <p>Square Image preferred</p>
+              </div>
             </div>
             <div>
               <Label htmlFor="skill" className={labelStyle}>
-                Skill
+                Skill {requiredIndicator}
               </Label>
               <Select value={formData.skill} onValueChange={handleSkillChange}>
                 <SelectTrigger
@@ -211,10 +227,12 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
                   <SelectValue placeholder="Select a skill" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="TRADING">Trading</SelectItem>
-                  <SelectItem value="RESEARCH">Research</SelectItem>
-                  <SelectItem value="AUTOMATION">Automation</SelectItem>
-                  <SelectItem value="OTHER">Other</SelectItem>
+                  {/* Map over the skills array to generate dropdown items */}
+                  {skills.map((skill) => (
+                    <SelectItem key={skill.value} value={skill.value}>
+                      {skill.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -223,7 +241,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
             {formData.skill === "OTHER" && (
               <div className="space-y-2">
                 <Label htmlFor="otherSkill" className={labelStyle}>
-                  Please Specify
+                  Please Specify {requiredIndicator}
                 </Label>
                 <Input
                   id="otherSkill"
@@ -240,7 +258,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
           <div className="space-y-6 flex flex-col">
             <div>
               <Label htmlFor="name" className={labelStyle}>
-                Agent Name
+                Agent Name {requiredIndicator}
               </Label>
               <Input
                 id="name"
@@ -252,7 +270,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
             </div>
             <div>
               <Label htmlFor="url" className={labelStyle}>
-                URL
+                URL {requiredIndicator}
               </Label>
               <Input
                 id="url"
@@ -264,7 +282,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
             </div>
             <div>
               <Label htmlFor="description" className={labelStyle}>
-                Description
+                Description {requiredIndicator}
               </Label>
               <Textarea
                 id="description"
@@ -276,7 +294,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
             </div>
             <div>
               <Label htmlFor="whyHunt" className={labelStyle}>
-                Why did you hunt this agent?
+                Why did you hunt this agent? {requiredIndicator}
               </Label>
               <Textarea
                 id="whyHunt"
@@ -287,11 +305,7 @@ export const NewAgentModal: React.FC<NewAgentModalProps> = ({ isOpen, onClose, o
               />
             </div>
             <div>
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="w-[184px] h-[37px] rounded-[5px] cursor-pointer bg-[var(--brand-blue)] hover:bg-[var(--brand-blue-hover)] text-white text-lg disabled:opacity-50"
-              >
+              <Button onClick={handleSubmit} disabled={isSubmitting} className={primaryButtonClasses}>
                 {isSubmitting ? "Submitting..." : "Submit"}
               </Button>
             </div>

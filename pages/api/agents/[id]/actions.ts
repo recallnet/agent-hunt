@@ -1,14 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@utils/db";
 
-interface ActionDelegate {
-  findUnique(args: { where: { userId_agentId: { userId: number; agentId: number } } }): Promise<object | null>;
-
-  delete(args: { where: { userId_agentId: { userId: number; agentId: number } } }): Promise<object>;
-
-  create(args: { data: { userId: number; agentId: number; createdAt: Date } }): Promise<object>;
-}
-
 // --- Main API Handler ---
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Route based on HTTP method
@@ -23,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-// --- GET Handler: Fetches the current user's action status ---
+// --- GET Handler: Fetches the current user's action status (No changes needed) ---
 async function handleGet(req: NextApiRequest, res: NextApiResponse) {
   const { id, address } = req.query; // For GET, address comes from query params
 
@@ -69,7 +61,7 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse) {
 // --- POST Handler: Performs or removes an action ---
 async function handlePost(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query; // Agent ID
-  const { action, address } = req.body; // For POST, action/address are in the body
+  const { action, address, reason } = req.body; // `reason` can be the reason text or the duplicate URL
 
   if (!id || typeof id !== "string" || isNaN(parseInt(id))) {
     return res.status(400).json({ error: "Invalid agent ID." });
@@ -93,13 +85,54 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
       create: { address },
     });
 
+    // Handle each action directly to ensure type safety
     switch (action) {
-      case "upvote":
-        return await handleToggleAction(res, prisma.upvote, { userId: user.id, agentId }, "Upvote");
-      case "duplicate":
-        return await handleToggleAction(res, prisma.duplicateFlag, { userId: user.id, agentId }, "Duplicate flag");
-      case "spam":
-        return await handleToggleAction(res, prisma.spamFlag, { userId: user.id, agentId }, "Spam flag");
+      case "upvote": {
+        const where = { userId_agentId: { userId: user.id, agentId } };
+        const existing = await prisma.upvote.findUnique({ where });
+
+        if (existing) {
+          await prisma.upvote.delete({ where });
+          return res.status(200).json({ message: "Upvote removed." });
+        } else {
+          const newAction = await prisma.upvote.create({
+            data: { userId: user.id, agentId, reason },
+          });
+          return res.status(201).json(newAction);
+        }
+      }
+      case "duplicate": {
+        const where = { userId_agentId: { userId: user.id, agentId } };
+        const existing = await prisma.duplicateFlag.findUnique({ where });
+
+        if (existing) {
+          await prisma.duplicateFlag.delete({ where });
+          return res.status(200).json({ message: "Duplicate flag removed." });
+        } else {
+          // The `duplicateAgentUrl` is required when creating a new flag
+          if (!reason) {
+            return res.status(400).json({ error: "Duplicate agent URL is required." });
+          }
+          const newAction = await prisma.duplicateFlag.create({
+            data: { userId: user.id, agentId, duplicateAgentUrl: reason },
+          });
+          return res.status(201).json(newAction);
+        }
+      }
+      case "spam": {
+        const where = { userId_agentId: { userId: user.id, agentId } };
+        const existing = await prisma.spamFlag.findUnique({ where });
+
+        if (existing) {
+          await prisma.spamFlag.delete({ where });
+          return res.status(200).json({ message: "Spam flag removed." });
+        } else {
+          const newAction = await prisma.spamFlag.create({
+            data: { userId: user.id, agentId, reason },
+          });
+          return res.status(201).json(newAction);
+        }
+      }
       default:
         // This case is redundant due to the check above but good for safety
         return res.status(400).json({ error: "Invalid action." });
@@ -107,28 +140,5 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
   } catch (error) {
     console.error(`Failed to process ${action} for agent ${id}:`, error);
     return res.status(500).json({ error: "Internal server error." });
-  }
-}
-
-async function handleToggleAction(
-  res: NextApiResponse,
-  model: ActionDelegate, // Use the specific interface instead of 'any'
-  where: { userId: number; agentId: number },
-  actionName: string
-) {
-  const existingAction = await model.findUnique({
-    where: { userId_agentId: where },
-  });
-
-  if (existingAction) {
-    // If the action exists, remove it
-    await model.delete({ where: { userId_agentId: where } });
-    return res.status(200).json({ message: `${actionName} removed.` });
-  } else {
-    // If the action does not exist, create it
-    const newAction = await model.create({
-      data: { ...where, createdAt: new Date() },
-    });
-    return res.status(201).json(newAction);
   }
 }

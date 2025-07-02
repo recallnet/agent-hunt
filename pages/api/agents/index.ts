@@ -163,10 +163,39 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse<Agent | Erro
 
     // Extract the new otherSkillDetail field separately
     const otherSkillDetail = fields.otherSkillDetail?.[0];
-    const avatarFile = files.avatar?.[0];
 
-    if (!avatarFile || !agentData.authorAddress) {
-      return res.status(400).json({ error: "Missing required fields or avatar." });
+    // --- Start of Changes ---
+    const avatarFile = files.avatar?.[0];
+    const fallbackAvatarPath = fields.fallbackAvatarPath?.[0];
+
+    if (!agentData.authorAddress) {
+      return res.status(400).json({ error: "Missing author address." });
+    }
+    // Check for either a user-uploaded file or a fallback path
+    if (!avatarFile && !fallbackAvatarPath) {
+      return res.status(400).json({ error: "Missing avatar information." });
+    }
+
+    let avatarUrl: string;
+
+    if (avatarFile) {
+      // If user uploaded a file, process and upload to S3
+      const fileContent = fs.readFileSync(avatarFile.filepath);
+      const key = `avatars/agent-${Date.now()}-${avatarFile.originalFilename}`;
+      const s3Bucket = process.env.S3_BUCKET_NAME!;
+      const putObjectParams: PutObjectCommandInput = {
+        Bucket: s3Bucket,
+        Key: key,
+        Body: fileContent,
+        ContentType: avatarFile.mimetype || "image/jpeg",
+        ACL: "public-read",
+      };
+      await s3Client.send(new PutObjectCommand(putObjectParams));
+      avatarUrl = `https://${s3Bucket}.${process.env.S3_ENDPOINT}/${key}`;
+    } else {
+      // If no file was uploaded, use the fallback path to construct a full public URL
+      const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://agenthunt.recall.network";
+      avatarUrl = `${siteUrl}${fallbackAvatarPath!}`;
     }
 
     const user = await prisma.user.upsert({
@@ -174,19 +203,6 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse<Agent | Erro
       update: {},
       create: { address: agentData.authorAddress },
     });
-
-    const fileContent = fs.readFileSync(avatarFile.filepath);
-    const key = `avatars/agent-${Date.now()}-${avatarFile.originalFilename}`;
-    const s3Bucket = process.env.S3_BUCKET_NAME!;
-    const putObjectParams: PutObjectCommandInput = {
-      Bucket: s3Bucket,
-      Key: key,
-      Body: fileContent,
-      ContentType: avatarFile.mimetype || "image/jpeg",
-      ACL: "public-read",
-    };
-    await s3Client.send(new PutObjectCommand(putObjectParams));
-    const avatarUrl = `https://${s3Bucket}.${process.env.S3_ENDPOINT}/${key}`;
 
     const newAgent = await prisma.agent.create({
       data: {

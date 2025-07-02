@@ -7,7 +7,7 @@ import { fetcher } from "@utils/helper-functions";
 import { useAccount } from "wagmi";
 import { AgentContentView } from "./AgentContentView";
 
-export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView }) => {
+export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView, mutateList }) => {
   const { address, isConnected } = useAccount();
   const { mutate } = useSWRConfig();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,8 +26,8 @@ export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView }) => 
   const isDuplicateFlagged = userActions?.duplicateFlagged ?? false;
   const isSpamFlagged = userActions?.spamFlagged ?? false;
 
-  const handleAction: HandleAction = async (e, action) => {
-    e.stopPropagation();
+  const handleAction: HandleAction = async (e, action, reason) => {
+    e?.stopPropagation();
     if (isSubmitting) return; // Prevent multiple clicks while an action is in progress
 
     if (!isConnected || !address) {
@@ -46,39 +46,25 @@ export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView }) => 
     const currentStates = { upvote: isUpvoted, duplicate: isDuplicateFlagged, spam: isSpamFlagged };
     const successMessage = actionMessages[action][!currentStates[action] ? "active" : "inactive"];
 
-    // Optimistic UI update
-    mutate(
-      apiUrl,
-      (currentData: UserActions | undefined) => ({
-        ...(currentData || { upvoted: false, duplicateFlagged: false, spamFlagged: false }),
-        upvoted: action === "upvote" ? !isUpvoted : isUpvoted,
-        duplicateFlagged: action === "duplicate" ? !isDuplicateFlagged : isDuplicateFlagged,
-        spamFlagged: action === "spam" ? !isSpamFlagged : isSpamFlagged,
-      }),
-      false
-    );
-
     try {
       const response = await fetch(`/api/agents/${agent.id}/actions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, address }),
+        body: JSON.stringify({ action, address, reason }),
       });
       if (!response.ok) {
         throw new Error((await response.json()).error || "The action failed.");
       }
       toast.success(successMessage);
-      // Revalidate data after successful action
-      mutate(apiUrl);
-      mutate("/api/agents?sortBy=top");
-      mutate("/api/agents?sortBy=new");
+      // Revalidate data after successful action and wait for it to complete
+      await Promise.all([mutateList?.(), mutate(apiUrl)]);
     } catch (error) {
-      // Revert optimistic UI update on failure
-      mutate(apiUrl, userActions, false);
+      // Revert optimistic UI update on failure by re-fetching from the server
       const errorMessage = error instanceof Error ? error.message : "An error occurred.";
       toast.error(errorMessage);
+      await Promise.all([mutateList?.(), mutate(apiUrl)]);
     } finally {
-      setIsSubmitting(false); // Re-enable buttons
+      setIsSubmitting(false); // Re-enable buttons after all actions and revalidations are done
     }
   };
 
@@ -93,7 +79,7 @@ export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView }) => 
   };
 
   if (cardView) {
-    return <AgentCard agent={agent} actionProps={actionProps} />;
+    return <AgentCard agent={agent} actionProps={actionProps} mutateList={mutateList} />;
   }
 
   return (

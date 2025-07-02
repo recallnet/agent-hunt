@@ -1,3 +1,4 @@
+// datasource and generator blocks
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,27 +8,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Defines the possible skills for an agent
 enum Skill {
-  TRADING
+  CRYPTO_TRADING
+  FINANCE
+  SOCIAL
+  PRODUCTIVITY
+  PREDICTIONS
+  ASSISTANT
+  MARKETING
   RESEARCH
-  AUTOMATION
+  GAMING
+  HEALTH
+  ECOMMERCE
+  CUSTOMER_SERVICE
   OTHER
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  createdAt     DateTime       @default(now())
-  address       String         @unique
-  agents        Agent[]        // A user can have many agents
-  upvotes       Upvote[]
+  id             Int             @id @default(autoincrement())
+  createdAt      DateTime        @default(now())
+  address        String          @unique
+  agents         Agent[]
+  upvotes        Upvote[]
   duplicateFlags DuplicateFlag[]
-  spamFlags     SpamFlag[]
+  spamFlags      SpamFlag[]
 }
 
 model Agent {
-  id               Int            @id @default(autoincrement())
-  createdAt        DateTime       @default(now())
+  id               Int             @id @default(autoincrement())
+  createdAt        DateTime        @default(now())
   name             String
   avatarUrl        String
   url              String
@@ -35,8 +44,8 @@ model Agent {
   whyHunt          String
   skill            Skill
   otherSkillDetail String?
-  author           User           @relation(fields: [authorId], references: [id])
   authorId         Int
+  author           User            @relation(fields: [authorId], references: [id])
   upvotes          Upvote[]
   duplicateFlags   DuplicateFlag[]
   spamFlags        SpamFlag[]
@@ -45,29 +54,38 @@ model Agent {
 model Upvote {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  reason    String?
   userId    Int
-  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
   agentId   Int
-  @@unique([userId, agentId]) // Ensure one upvote per user per agent
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, agentId])
+  @@index([agentId]) // Index to speed up relation queries
 }
 
 model DuplicateFlag {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  agentId   Int
-  @@unique([userId, agentId]) // Ensure one duplicate flag per user per agent
+  id                Int      @id @default(autoincrement())
+  createdAt         DateTime @default(now())
+  duplicateAgentUrl String
+  userId            Int
+  user              User     @relation(fields: [userId], references: [id])
+  agentId           Int
+  agent             Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, agentId])
+  @@index([agentId]) // Index to speed up relation queries
 }
 
 model SpamFlag {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  reason    String?
   userId    Int
-  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
   agentId   Int
-  @@unique([userId, agentId]) // Ensure one spam flag per user per agent
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, agentId])
+  @@index([agentId]) // Index to speed up relation queries
 }

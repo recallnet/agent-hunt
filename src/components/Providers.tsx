@@ -1,5 +1,12 @@
 import React from "react";
-import { RainbowKitProvider, getDefaultWallets } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, connectorsForWallets } from "@rainbow-me/rainbowkit";
+import {
+  metaMaskWallet,
+  injectedWallet,
+  walletConnectWallet,
+  coinbaseWallet,
+  rainbowWallet,
+} from "@rainbow-me/rainbowkit/wallets";
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { mainnet, polygon, optimism, arbitrum, base, zora, sepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -11,7 +18,16 @@ if (!projectId) {
   throw new Error("You need to provide a NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID env variable");
 }
 
-const { connectors } = getDefaultWallets({ appName: "Agent Hunt", projectId });
+// Manually define a list of common EVM wallets
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: "Recommended",
+      wallets: [injectedWallet, metaMaskWallet, rainbowWallet, walletConnectWallet, coinbaseWallet],
+    },
+  ],
+  { appName: "Agent Hunt", projectId }
+);
 
 const config = createConfig({
   chains: [mainnet, polygon, optimism, arbitrum, base, zora, sepolia],

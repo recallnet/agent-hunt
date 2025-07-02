@@ -1,18 +1,23 @@
 import React, { useState } from "react";
 import { ActionButtons } from "./ActionButtons";
-import { AgentCardProps } from "@utils/types";
+import { AgentCardProps, skills } from "@utils/types";
 import Image from "next/image";
 import { AgentParent } from "./AgentParent";
 import { ModalBase } from "@/components/Modals/ModalBase";
 import { formatSkill } from "@utils/helper-functions";
 
-export const AgentCard: React.FC<AgentCardProps> = ({ agent, actionProps }) => {
+export const AgentCard: React.FC<AgentCardProps> = ({ agent, actionProps, mutateList }) => {
   const [modalOpen, setModalOpen] = useState(false);
+
+  const skillLabel = skills.find((s) => s.value === agent.skill)?.label || formatSkill(agent.skill);
 
   return (
     <>
-      <div className="relative h-[399px] w-full overflow-hidden group transition-all duration-300 hover:shadow-glow ring-1 ring-gray-200">
-        <div className="relative w-full h-full cursor-pointer" onClick={() => setModalOpen(true)}>
+      <div
+        className="relative h-[399px] w-full overflow-hidden group transition-all duration-300 hover:shadow-glow cursor-pointer"
+        onClick={() => setModalOpen(true)}
+      >
+        <div className="relative w-full h-full">
           <Image
             src={agent.avatarUrl}
             alt={`${agent.name}'s avatar`}
@@ -22,10 +27,11 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent, actionProps }) => {
             priority
           />
         </div>
+        {/* White box underneath */}
         <div className="absolute bottom-0 left-0 right-0 h-[124px] bg-white/90 p-4 rounded-t-2xl">
           <div className="flex h-full flex-col justify-between gap-1">
             <div>
-              <span className="text-base font-small">{formatSkill(agent.skill)}</span>
+              <span className="text-base font-small">{skillLabel}</span>
             </div>
             <div className="-mt-4">
               <h3 className="text-2xl font-bold text-gray-900 truncate">{agent.name}</h3>
@@ -36,7 +42,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent, actionProps }) => {
       </div>
 
       <ModalBase isOpen={modalOpen} onClose={() => setModalOpen(false)}>
-        <AgentParent agent={agent} cardView={false} />
+        <AgentParent agent={agent} cardView={false} mutateList={mutateList} />
       </ModalBase>
     </>
   );
