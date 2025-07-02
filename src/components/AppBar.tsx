@@ -50,24 +50,28 @@ export const AppBar: React.FC = () => {
   };
 
   const navTextStyle = "font-bold text-base tracking-tighter";
-  const centerNavStyle = `text-xl ${navTextStyle} hover:cursor-pointer`;
+  const centerNavStyle = `${navTextStyle} hover:cursor-pointer`;
 
   const huntButtonClass =
-    "h-[42px] w-[135px] rounded-[5px] bg-[var(--brand-blue)] text-white border-2 border-[var(--brand-blue)] hover:bg-[var(--brand-blue-hover)] hover:cursor-pointer";
+    "h-[42px] w-[135px] rounded-[5px] bg-transparent text-[var(--brand-blue)] border-2 border-[var(--brand-blue)] hover:bg-[var(--brand-blue-hover)] hover:text-white hover:cursor-pointer";
+
+  const connectButtonClass =
+    "h-[42px] w-[135px] rounded-[5px] bg-[var(--brand-blue)] text-white border-2 border-[var(--brand-blue)] hover:bg-transparent hover:text-[var(--brand-blue)] hover:cursor-pointer";
 
   const getLinkClass = (href: string) => {
     const baseStyle = `${centerNavStyle} p-0 hover:bg-transparent`;
     return pathname === href ? `${baseStyle} text-[var(--brand-blue)]` : baseStyle;
   };
 
+  const rulesLinkClass = `${centerNavStyle} p-0 hover:bg-transparent text-black`;
+
   return (
     <>
       <header className="sticky top-0 z-40 w-full bg-white shadow-sm">
-        <nav className="container mx-auto flex h-[84px] items-center justify-between px-6 relative">
+        <nav className="w-full flex h-[84px] items-center justify-between relative px-4 md:px-6">
           {/* Left: Logo */}
           <Link href="/top" className="flex items-center space-x-3">
-            <Image src="/agent-icon.svg" alt="Agent Hunt Logo" width={28} height={32} />
-            <span className="text-2xl font-normal tracking-tighter hidden xl:inline">AgentHunt</span>
+            <Image src="/agent-hunt-logo.svg" alt="Agent Hunt Logo" width={190} height={100} />
           </Link>
 
           {/* Center: Desktop Navigation */}
@@ -75,30 +79,49 @@ export const AppBar: React.FC = () => {
             <Link href="/top" className={getLinkClass("/top")}>
               TOP
             </Link>
-            <Button className={`${centerNavStyle} ${huntButtonClass}`} onClick={handleHuntClick}>
-              + HUNT
-            </Button>
             <Link href="/new" className={getLinkClass("/new")}>
               NEW
+            </Link>
+            <Link href="/new" className={rulesLinkClass} onClick={handleRulesClick}>
+              RULES
             </Link>
           </div>
 
           {/* Right: Desktop Navigation */}
           <div className="hidden xl:flex items-center space-x-10">
-            <Button
-              variant="link"
-              className={`${navTextStyle} p-0 h-auto hover:bg-transparent hover:no-underline hover:cursor-pointer`}
-              onClick={handleRulesClick}
-            >
-              RULES
+            <Button className={`${centerNavStyle} ${huntButtonClass}`} onClick={handleHuntClick}>
+              + HUNT
             </Button>
-            {/* Add chainStatus="none" to hide the network selector */}
-            <ConnectButton chainStatus="none" />
+            <ConnectButton.Custom>
+              {({ openConnectModal, openAccountModal, account, chain, mounted }) => {
+                if (!mounted) return null;
+                return (
+                  <Button
+                    className={`${centerNavStyle} ${connectButtonClass}`}
+                    onClick={account ? openAccountModal : openConnectModal}
+                  >
+                    {account ? account.displayName : "CONNECT"}
+                  </Button>
+                );
+              }}
+            </ConnectButton.Custom>
           </div>
 
           {/* Mobile Menu Button & Connect Wallet */}
           <div className="xl:hidden flex items-center">
-            <ConnectButton showBalance={false} chainStatus="none" label="CONNECT" accountStatus="avatar" />
+            <ConnectButton.Custom>
+              {({ openConnectModal, openAccountModal, account, chain, mounted }) => {
+                if (!mounted) return null;
+                return (
+                  <Button
+                    className={`${centerNavStyle} ${connectButtonClass}`}
+                    onClick={account ? openAccountModal : openConnectModal}
+                  >
+                    {account ? account.displayName : "CONNECT"}
+                  </Button>
+                );
+              }}
+            </ConnectButton.Custom>
             <button onClick={() => setMobileMenuOpen(!isMobileMenuOpen)} className="ml-4">
               <Menu className="w-8 h-8" />
             </button>
@@ -109,18 +132,18 @@ export const AppBar: React.FC = () => {
         {isMobileMenuOpen && (
           <div className="xl:hidden bg-white shadow-md absolute w-full">
             <div className="flex flex-col items-center space-y-4 p-4">
-              <Link href="/top" className={getLinkClass("/top")} onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/top" className={`${getLinkClass("/top")}`} onClick={() => setMobileMenuOpen(false)}>
                 TOP
               </Link>
               <Button className={`${centerNavStyle} ${huntButtonClass}`} onClick={handleHuntClick}>
                 + HUNT
               </Button>
-              <Link href="/new" className={getLinkClass("/new")} onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/new" className={`${getLinkClass("/new")}`} onClick={() => setMobileMenuOpen(false)}>
                 NEW
               </Link>
               <Button
                 variant="link"
-                className={`${navTextStyle} hover:bg-transparent hover:cursor-pointer`}
+                className={`${centerNavStyle} hover:bg-transparent text-black`}
                 onClick={handleRulesClick}
               >
                 RULES
