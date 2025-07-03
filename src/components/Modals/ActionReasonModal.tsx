@@ -38,7 +38,7 @@ export const ActionReasonModal: React.FC<ActionReasonModalProps> = ({
   const modalContent = {
     upvote: {
       title: "Why are you upvoting?",
-      label: "Reason (Optional)",
+      label: "Reason (Required)",
       placeholder: "e.g., This agent has been super helpful for my research.",
       inputType: "textarea" as const,
       maxLength: 280,

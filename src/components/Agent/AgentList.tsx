@@ -62,7 +62,7 @@ export const AgentList: React.FC<AgentListProps> = ({ sortBy }) => {
 
       <div className="text-center my-10">
         {hasMore && (
-          <Button onClick={() => setSize(size + 1)} disabled={isFetchingMore} className="w-40">
+          <Button onClick={() => setSize(size + 1)} disabled={isFetchingMore} className="w-40 cursor-pointer">
             {isFetchingMore ? <Spinner className="w-6 h-6" /> : "Load More"}
           </Button>
         )}
