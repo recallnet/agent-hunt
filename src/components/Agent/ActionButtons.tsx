@@ -65,9 +65,18 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   };
 
   const handleSubmitReason = (reason: string) => {
-    if (modalAction) {
-      handleAction(null, modalAction, reason);
+    if (!modalAction) return;
+
+    const trimmedReason = reason.trim();
+
+    // A reason is required for upvoting and flagging duplicates.
+    if ((modalAction === "upvote" || modalAction === "duplicate") && !trimmedReason) {
+      toast.error("A reason is required for this action.");
+      return; // Stop the submission process.
     }
+
+    // If the action is valid, proceed and close the modal.
+    handleAction(null, modalAction, trimmedReason);
     setModalAction(null);
   };
 

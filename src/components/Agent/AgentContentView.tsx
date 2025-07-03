@@ -66,7 +66,7 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
     }
   };
   return (
-    <div className="bg-white rounded-lg w-full min-[778px]:w-[778px] mx-auto border border-gray-200 shadow-lg">
+    <div className="bg-white rounded-lg w-full min-[778px]:w-[778px] mx-auto">
       {/* Banner */}
       <div
         className="h-[161px] w-full rounded-t-lg"
@@ -80,7 +80,10 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
           <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center gap-4">
             {/* --- AVATAR SECTION (MODIFIED) --- */}
             <div className="-mt-[160px] w-[204px] h-[204px] relative shadow-lg rounded-[5px]">
-              <div className="absolute inset-0 rounded-[5px] " style={{ background: "var(--avatar-fallback-background, #F3F4F6)" }} />
+              <div
+                className="absolute inset-0 rounded-[5px] "
+                style={{ background: "var(--avatar-fallback-background, #F3F4F6)" }}
+              />
               <Image
                 src={agent.avatarUrl}
                 alt={`${agent.name}'s avatar`}

@@ -55,6 +55,7 @@ export type AgentParentProps = {
   agent: EnhancedAgent;
   cardView: boolean;
   mutateList?: SWRInfiniteKeyedMutator<PaginatedAgentsResponse[]>;
+  disableScroll?: boolean;
 };
 
 // Define the extended Agent type that includes relational arrays

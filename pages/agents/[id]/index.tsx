@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button";
 
 // A simple fetcher function that SWR will use to get data.
 
-// Dynamically import AgentParent and disable server-side rendering (SSR) for it.
-// This is the key to preventing the server error.
+// Dynamically import AgentParent. We adjust the import path to match the component name.
 const DynamicAgentParent = dynamic(() => import("@components/Agent/AgentParent").then((mod) => mod.AgentParent), {
   ssr: false,
 });
@@ -42,7 +41,7 @@ const AgentPage: NextPage = () => {
       </Head>
 
       <div className="container mx-auto max-w-4xl py-8 px-4 md:px-0">
-        <DynamicAgentParent agent={agent} cardView={false} />
+        <DynamicAgentParent agent={agent} cardView={false} disableScroll={true} />
         <div className="flex justify-center items-center">
           <Button
             variant="default" // Changed from outline to default for stronger visual appeal

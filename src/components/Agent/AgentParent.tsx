@@ -5,7 +5,7 @@ import { ActionButtonsProps, AgentParentProps, HandleAction } from "@utils/types
 import { useAccount } from "wagmi";
 import { AgentContentView } from "./AgentContentView";
 
-export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView, mutateList }) => {
+export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView, mutateList, disableScroll }) => {
   const { address, isConnected } = useAccount();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -84,8 +84,11 @@ export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView, mutat
     return <AgentCard agent={agent} actionProps={actionProps} mutateList={mutateList} />;
   }
 
+  // Conditionally apply scrolling classes based on the `disableScroll` prop
+  const containerClasses = `relative bg-white rounded-lg ${!disableScroll ? "max-h-[90vh] overflow-y-auto" : ""}`;
+
   return (
-    <div className="relative max-h-[90vh] bg-white rounded-lg">
+    <div className={containerClasses}>
       <AgentContentView agent={agent} actionProps={actionProps} />
     </div>
   );
