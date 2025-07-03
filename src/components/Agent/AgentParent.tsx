@@ -85,7 +85,7 @@ export const AgentParent: React.FC<AgentParentProps> = ({ agent, cardView, mutat
   }
 
   return (
-    <div className="relative max-h-[90vh] overflow-y-auto bg-white rounded-lg">
+    <div className="relative max-h-[90vh] bg-white rounded-lg">
       <AgentContentView agent={agent} actionProps={actionProps} />
     </div>
   );

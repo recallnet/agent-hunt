@@ -1,11 +1,12 @@
 import React from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useRouter } from "next/router";
+import router, { useRouter } from "next/router";
 import useSWR from "swr";
 import dynamic from "next/dynamic";
 import { EnhancedAgent } from "@utils/types"; // Make sure this path is correct
 import { fetcher } from "@utils/helper-functions";
+import { Button } from "@/components/ui/button";
 
 // A simple fetcher function that SWR will use to get data.
 
@@ -14,6 +15,10 @@ import { fetcher } from "@utils/helper-functions";
 const DynamicAgentParent = dynamic(() => import("@components/Agent/AgentParent").then((mod) => mod.AgentParent), {
   ssr: false,
 });
+
+const handleAllAgentsClick = () => {
+  router.push("/"); // Redirect to homepage
+};
 
 const AgentPage: NextPage = () => {
   const router = useRouter();
@@ -38,6 +43,15 @@ const AgentPage: NextPage = () => {
 
       <div className="container mx-auto max-w-4xl py-8 px-4 md:px-0">
         <DynamicAgentParent agent={agent} cardView={false} />
+        <div className="flex justify-center items-center">
+          <Button
+            variant="default" // Changed from outline to default for stronger visual appeal
+            className="cursor-pointer mt-6 text-sm font-semibold px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg rounded-full"
+            onClick={handleAllAgentsClick}
+          >
+            Explore All Agents
+          </Button>
+        </div>
       </div>
     </>
   );

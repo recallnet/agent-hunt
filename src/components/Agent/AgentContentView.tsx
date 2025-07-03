@@ -4,7 +4,9 @@ import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { ActionButtons } from "./ActionButtons";
 import { formatSkill } from "@utils/helper-functions";
+import { Share } from "lucide-react";
 import { AgentCardProps, skills } from "@utils/types";
+import toast from "react-hot-toast";
 
 const MAX_DISPLAY_COUNT = 16;
 
@@ -27,7 +29,6 @@ const UpvoterItem: React.FC<UpvoterItemProps> = ({ address }) => {
 
   return (
     <div className="flex items-center gap-2" title={address}>
-      {/* This can be updated to a user-specific avatar in the future if desired */}
       <Image src="/circle-icon.svg" alt="Upvoter icon" width={25} height={24} />
       <span style={{ color: "var(--brand-gray-text)" }}>{displayName}</span>
     </div>
@@ -43,8 +44,29 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
 
   const skillLabel = skills.find((s) => s.value === agent.skill)?.label || formatSkill(agent.skill);
 
+  const handleShare = async () => {
+    const shareData = {
+      title: agent.name,
+      text: agent.description,
+      url: agent.url,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: Copy host/agentid to clipboard
+        const host = window.location.host;
+        const shareUrl = `${host}/agents/${agent.id}`;
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Agent link copied to clipboard!");
+      }
+    } catch (err) {
+      console.error("Share failed:", err);
+    }
+  };
   return (
-    <div className="bg-white rounded-lg w-full min-[778px]:w-[778px] mx-auto">
+    <div className="bg-white rounded-lg w-full min-[778px]:w-[778px] mx-auto border border-gray-200 shadow-lg">
       {/* Banner */}
       <div
         className="h-[161px] w-full rounded-t-lg"
@@ -57,11 +79,8 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
           {/* Left Column: Avatar & Skill */}
           <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center gap-4">
             {/* --- AVATAR SECTION (MODIFIED) --- */}
-            <div className="-mt-[160px] w-[204px] h-[204px] relative shadow-lg">
-              {/* This div acts as the rectangular background */}
-              <div className="absolute inset-0" style={{ background: "var(--avatar-fallback-background, #F3F4F6)" }} />
-
-              {/* The Image is placed on top of the background div */}
+            <div className="-mt-[160px] w-[204px] h-[204px] relative shadow-lg rounded-[5px]">
+              <div className="absolute inset-0 rounded-[5px] " style={{ background: "var(--avatar-fallback-background, #F3F4F6)" }} />
               <Image
                 src={agent.avatarUrl}
                 alt={`${agent.name}'s avatar`}
@@ -69,7 +88,7 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
                 sizes="204px"
                 className="object-cover"
                 style={{
-                  clipPath: "inset(0)", // Ensures the image is clipped to a rectangle
+                  clipPath: "inset(0)",
                 }}
                 priority
               />
@@ -105,8 +124,15 @@ export const AgentContentView: React.FC<AgentCardProps> = ({ agent, actionProps 
                 {agent.description}
               </p>
             </div>
-            <div className="w-full max-w-[204px] mt-[25px]">
+            <div className="flex items-center gap-4 w-full max-w-[204px] mt-[25px]">
               <ActionButtons {...actionProps} />
+              <button
+                onClick={handleShare}
+                className="p-2 rounded-full hover:bg-gray-200 cursor-pointer"
+                title="Share this agent"
+              >
+                <Share className="w-6 h-6" />
+              </button>
             </div>
           </div>
         </div>
